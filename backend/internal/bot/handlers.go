@@ -25,7 +25,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message) {
 }
 
 func (b *Bot) HandleMessage(message *tgbotapi.Message) {
-	log.Printf("📩 Получено сообщение от @%s: %s", message.From.UserName, message.Text)
+	log.Printf("📩 Received message from @%s: %s", message.From.UserName, message.Text)
 
 	text := strings.ToLower(strings.TrimSpace(message.Text))
 
@@ -64,9 +64,9 @@ func (b *Bot) handleStartCommand(message *tgbotapi.Message) {
 	msg.ReplyMarkup = CreateStartKeyboard(b.API.Self.UserName)
 
 	if _, err := b.API.Send(msg); err != nil {
-		log.Printf("Ошибка отправки сообщения: %v", err)
+		log.Printf("Failed send message: %v", err)
 	} else {
-		log.Printf("✅ Отправлено приветствие пользователю @%s", message.From.UserName)
+		log.Printf("✅ Send message @%s", message.From.UserName)
 	}
 }
 

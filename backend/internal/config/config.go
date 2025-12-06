@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	TelegramBotToken string
+	ServerPort       string
 }
 
 func Load() *Config {
@@ -18,6 +19,7 @@ func Load() *Config {
 
 	return &Config{
 		TelegramBotToken: getEnv("BOT_TOKEN", ""),
+		ServerPort:       getEnv("BACKEND_PORT", "8080"),
 	}
 }
 

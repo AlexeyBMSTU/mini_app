@@ -29,12 +29,12 @@ setup:
 
 run: setup
 	@echo "Starting backend and frontend in parallel..."
-	@cd backend && go run cmd/bot/main.go &
+	@cd backend && go run cmd/app/main.go &
 	@sleep 2 && cd frontend && npm run build && npm run dev
 
 run-backend: setup
 	@echo "Starting backend..."
-	@cd backend && go run cmd/bot/main.go
+	@cd backend && go run cmd/app/main.go
 
 run-frontend: setup
 	@echo "Building and starting frontend..."

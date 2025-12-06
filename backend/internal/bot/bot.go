@@ -35,7 +35,7 @@ func New(cfg *config.Config) (*Bot, error) {
 func (b *Bot) setup() error {
 	_, err := b.API.Request(tgbotapi.DeleteWebhookConfig{DropPendingUpdates: true})
 	if err != nil {
-		log.Printf("Ошибка удаления webhook: %v", err)
+		log.Printf("Failed delete webhook: %v", err)
 	}
 
 	time.Sleep(2 * time.Second)
@@ -44,12 +44,12 @@ func (b *Bot) setup() error {
 	u.Timeout = 60
 	b.Updates = b.API.GetUpdatesChan(u)
 
-	log.Printf("🤖 Авторизован как %s", b.API.Self.UserName)
+	log.Printf("🤖 Auth as %s", b.API.Self.UserName)
 	return nil
 }
 
 func (b *Bot) Start() {
-	log.Println("✅ Бот запущен!")
+	log.Println("✅ Bot started!")
 
 	for update := range b.Updates {
 		if update.Message == nil {
