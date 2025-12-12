@@ -1,7 +1,6 @@
 export * from './telegram';
 import { TelegramUser } from './telegram';
 
-// Общие типы для приложения
 export interface AppState {
   user: TelegramUser | null;
   loading: boolean;

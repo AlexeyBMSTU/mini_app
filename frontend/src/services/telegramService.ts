@@ -1,59 +1,61 @@
-import { TelegramUser, TelegramWebApp } from '../types/telegram';
+import { TelegramUser, TelegramWebApp } from '../types/telegram'
 
 class TelegramService {
-  private webApp: TelegramWebApp | null = null;
+	private webApp: TelegramWebApp | null = null
+	private user: TelegramUser | undefined = undefined
+  public isAvailable: boolean = false;
 
-  init(): boolean {
-    try {
-      this.webApp = window.Telegram?.WebApp || null;
-      
-      if (this.webApp) {
-        this.webApp.ready();
-        this.webApp.expand();
-        this.webApp.setHeaderColor('#ffffff');
-        this.webApp.setBackgroundColor('#ffffff');
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Ошибка инициализации Telegram:', error);
-      return false;
-    }
-  }
+	init(): boolean {
+		try {
+			this.webApp = window.Telegram?.WebApp || null
+			this.user = this.webApp?.initDataUnsafe?.user
+      this.isAvailable = !!(this.webApp && this.user);
 
-  isTelegram(): boolean {
-    return !!this.webApp;
-  }
+			if (this.webApp && this.isAvailable) {
+				this.webApp.ready()
+				this.webApp.expand()
+				this.webApp.setHeaderColor('#ffffff')
+				this.webApp.setBackgroundColor('#ffffff')
+				return true
+			}
+			return false
+		} catch (error) {
+			console.error('Ошибка инициализации Telegram:', error)
+			return false
+		}
+	}
 
-  getUser(): TelegramUser | null {
-    if (!this.webApp) return null;
-    return this.webApp.initDataUnsafe?.user || null;
-  }
+	isTelegram(): boolean {
+		return this.isAvailable;
+	}
 
-  showAlert(message: string): void {
-    if (this.webApp) {
-      this.webApp.showAlert(message);
-    } else {
-      alert(message);
-    }
-  }
+	getUser(): TelegramUser | null {
+		if (!this.webApp || !this.isAvailable) return null
+		return this.webApp.initDataUnsafe?.user || null
+	}
 
-  close(): void {
-    if (this.webApp) {
-      this.webApp.close();
-    }
-  }
+	showAlert(message: string): void {
+		if (this.webApp && this.isAvailable) {
+			this.webApp.showAlert(message)
+		}
+	}
 
-  getMockUser(): TelegramUser {
-    return {
-      id: 123456789,
-      first_name: 'Разработчик',
-      last_name: 'Тестовый',
-      username: 'developer',
-      language_code: 'ru',
-      is_premium: true
-    };
-  }
+	close(): void {
+		if (this.webApp && this.isAvailable) {
+			this.webApp.close()
+		}
+	}
+
+	getMockUser(): TelegramUser {
+		return {
+			id: 123456789,
+			first_name: 'Разработчик',
+			last_name: 'Тестовый',
+			username: 'developer',
+			language_code: 'ru',
+			is_premium: true,
+		}
+	}
 }
 
-export default new TelegramService();
+export default new TelegramService()

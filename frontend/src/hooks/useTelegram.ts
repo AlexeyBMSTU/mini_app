@@ -10,13 +10,9 @@ export const useTelegram = () => {
   useEffect(() => {
     const initTelegram = () => {
       try {
-        const isLocalHost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' || 
-                           window.location.hostname.startsWith('192.168.');
-
         const telegramInitialized = telegramService.init();
         
-        if (telegramInitialized && !isLocalHost) {
+        if (telegramInitialized) {
           setIsTelegram(true);
           const userData = telegramService.getUser();
           if (userData) {

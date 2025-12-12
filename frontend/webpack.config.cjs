@@ -1,6 +1,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const webpack = require('webpack');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const FRONTEND_PORT = process.env.FRONTEND_PORT;
 const BACKEND_PORT = process.env.BACKEND_PORT;
@@ -96,13 +98,43 @@ module.exports = (env, argv) => {
     }),
     new Dotenv({
       path: './.env'
+    }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        diagnosticOptions: {
+          semantic: true,
+          syntactic: true,
+        },
+      },
+    }),
+    new webpack.DefinePlugin({
+      'process.env.ENV': JSON.stringify(process.env.ENV || 'development'),
+      'process.env.IS_PROD': JSON.stringify(process.env.ENV === 'production'),
+      'process.env.NODE_ENV': JSON.stringify(mode),
+      'IS_LOCAL_HOST': JSON.stringify(mode === 'development'),
+      'IS_DEV': JSON.stringify(mode === 'development')
     })
   ],
   
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx']
+    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
   },
   
-  devtool: mode === 'development' ? 'eval-source-map' : 'source-map'
+  devtool: mode === 'development' ? 'eval-source-map' : 'source-map',
+  
+  stats: {
+    colors: true,
+    modules: false,
+    reasons: true,
+    errorDetails: true,
+    performance: true,
+    warnings: true,
+    errors: true,
+    errorStack: true,
+    moduleTrace: true
+  }
   };
 };
