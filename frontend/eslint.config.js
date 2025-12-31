@@ -23,6 +23,8 @@ export default [
         __filename: 'readonly',
         IS_LOCAL_HOST: 'readonly',
         IS_DEV: 'readonly',
+        fetch: 'readonly',
+        RequestInit: 'readonly',
       },
     },
     plugins: {

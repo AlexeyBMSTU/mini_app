@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mini-app-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-miniapp}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mini-app-network
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mini-app-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_password}
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    networks:
+      - mini-app-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: server
+    container_name: mini-app-backend
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BACKEND_PORT=${BACKEND_PORT:-8080}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-miniapp}
+      - POSTGRES_PORT=5432
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      - postgres
+    networks:
+      - mini-app-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+  # Telegram бот
+  bot:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: bot
+    container_name: mini-app-bot
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-miniapp}
+      - POSTGRES_PORT=5432
+    depends_on:
+      - postgres
+    networks:
+      - mini-app-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:
+
+networks:
+  mini-app-network:
+    driver: bridge

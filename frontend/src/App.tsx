@@ -7,17 +7,24 @@ import {
 	UserInfo,
 } from '@/components'
 import { useTelegram } from '@/hooks/useTelegram'
+import { useApi } from '@/hooks/useApi'
 import styles from '@/styles/common.module.css'
+import apiService from './services/apiService'
+import avitoService from './services/avitoService'
 
 function App() {
-	const { user, loading, isTelegram, showAlert, closeApp } = useTelegram()
+	const { user: telegramUser, loading: telegramLoading, isTelegram, showAlert, closeApp } = useTelegram()
+	const { loading: apiLoading, error, getUserData, saveUserData } = useApi()
 
-	const handleTelegramAlert = () => {
-		showAlert('Сообщение из Telegram Mini App!')
-	}
+	const loading = telegramLoading || apiLoading
 
-	const simulateTelegramAction = () => {
-		alert(`Это действие ${isTelegram ? 'в Telegram2' : 'в браузере'}`)
+	const handleGetToken = async () => {
+		try {
+			await avitoService.getItems()
+			await avitoService.getChats()
+		} catch (error) {
+			console.error('Error getting token:', error)
+		}
 	}
 
 	if (loading) {
@@ -26,22 +33,7 @@ function App() {
 
 	return (
 		<div className={styles.container}>
-			<Header isTelegram={isTelegram} />
-
-			<main className={styles.main}>
-				<UserInfo user={user} isTelegram={isTelegram} />
-
-				<Features
-					isTelegram={isTelegram}
-					onTestAction={simulateTelegramAction}
-					onShowAlert={handleTelegramAlert}
-					onCloseApp={closeApp}
-				/>
-
-				{!isTelegram && <DevInstructions />}
-			</main>
-
-			<Footer isTelegram={isTelegram} />
+			<button className={styles.button} onClick={handleGetToken}>Get Token</button>
 		</div>
 	)
 }

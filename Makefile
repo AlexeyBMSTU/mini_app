@@ -1,4 +1,4 @@
-.PHONY: setup run
+.PHONY: setup run run-docker run-backend run-frontend build-frontend install clean
 
 setup:
 	# Копируем .env.example в .env (если его нет)
@@ -32,6 +32,10 @@ run: setup
 	@cd backend && go run cmd/app/main.go &
 	@sleep 2 && cd frontend && npm run build:dev && npm run dev
 
+run-docker: setup
+	@echo "Starting backend services with Docker..."
+	@docker-compose -f docker-compose.backend.yml up --build
+
 run-backend: setup
 	@echo "Starting backend..."
 	@cd backend && go run cmd/app/main.go
@@ -53,5 +57,10 @@ install:
 
 clean:
 	@echo "Cleaning up..."
-	@rm -rf backend/.env backend/go.sum frontend/dist frontend/node_modules frontend/.env 
+	@rm -rf backend/.env backend/go.sum frontend/dist frontend/node_modules frontend/.env
 	@echo "Cleaned up (.env, dist, node_modules, go.sum) files from subdirectories"
+
+docker-clean:
+	@echo "Stopping and removing Docker containers..."
+	@docker-compose -f docker-compose.backend.yml down -v
+	@echo "Docker containers stopped and removed"

@@ -6,6 +6,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const FRONTEND_PORT = process.env.FRONTEND_PORT;
 const BACKEND_PORT = process.env.BACKEND_PORT;
+// const LOCAL_URL = `https://7wt1l5rz-8080.euw.devtunnels.ms/`
 const LOCAL_URL = `http://localhost:${BACKEND_PORT}`;
 
 module.exports = (env, argv) => {
@@ -38,8 +39,19 @@ module.exports = (env, argv) => {
       },
     },
     proxy: {
-      '/api': LOCAL_URL,
-      '/telegram': LOCAL_URL,
+      '**': {
+        target: LOCAL_URL,
+        changeOrigin: true,
+        secure: false,
+        bypass: function(req) {
+          if (req.url.startsWith('/static/') || 
+              req.url.startsWith('/dist/') ||
+              req.url === '/' ||
+              req.url.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|json)$/)) {
+            return req.url;
+          }
+        }
+      }
     },
     headers: {
       "Access-Control-Allow-Origin": "*",

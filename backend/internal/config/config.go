@@ -8,8 +8,15 @@ import (
 )
 
 type Config struct {
-	TelegramBotToken string
-	ServerPort       string
+	TelegramBotToken  string
+	ServerPort        string
+	PostgresHost      string
+	PostgresUser      string
+	PostgresPassword  string
+	PostgresDB        string
+	PostgresPort      string
+	AvitoClientId     string
+	AvitoClientSecret string
 }
 
 func Load() *Config {
@@ -20,6 +27,13 @@ func Load() *Config {
 	return &Config{
 		TelegramBotToken: getEnv("BOT_TOKEN", ""),
 		ServerPort:       getEnv("BACKEND_PORT", "8080"),
+		PostgresHost:     getEnv("POSTGRES_HOST", "localhost"),
+		PostgresUser:     getEnv("POSTGRES_USER", "postgres"),
+		PostgresPassword: getEnv("POSTGRES_PASSWORD", "password"),
+		PostgresDB:       getEnv("POSTGRES_DB", "miniapp"),
+		PostgresPort:     getEnv("POSTGRES_PORT", "5432"),
+		AvitoClientId:     getEnv("AVITO_CLIENT_ID", ""),
+		AvitoClientSecret:     getEnv("AVITO_CLIENT_SECRET", ""),
 	}
 }
 

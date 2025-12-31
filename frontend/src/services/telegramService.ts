@@ -30,7 +30,14 @@ class TelegramService {
 	}
 
 	getUser(): TelegramUser | null {
-		if (!this.webApp || !this.isAvailable) return null
+		if (!this.webApp || !this.isAvailable) return {
+			id: 123456789,
+			first_name: 'Разработчик',
+			last_name: 'Тестовый',
+			username: 'developer',
+			language_code: 'ru',
+			is_premium: true,
+		}
 		return this.webApp.initDataUnsafe?.user || null
 	}
 

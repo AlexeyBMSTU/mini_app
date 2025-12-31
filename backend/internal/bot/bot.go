@@ -1,17 +1,24 @@
 package bot
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"mini-app-backend/internal/config"
+	"mini-app-backend/internal/user"
+	
+	_ "github.com/lib/pq"
 )
 
 type Bot struct {
 	API     *tgbotapi.BotAPI
 	Config  *config.Config
+	DB      *sql.DB
 	Updates tgbotapi.UpdatesChannel
+	UserRepo *user.SQLRepository
 }
 
 func New(cfg *config.Config) (*Bot, error) {
@@ -33,6 +40,10 @@ func New(cfg *config.Config) (*Bot, error) {
 }
 
 func (b *Bot) setup() error {
+	if err := b.initDB(); err != nil {
+		return fmt.Errorf("failed to initialize database: %v", err)
+	}
+	
 	_, err := b.API.Request(tgbotapi.DeleteWebhookConfig{DropPendingUpdates: true})
 	if err != nil {
 		log.Printf("Failed delete webhook: %v", err)
@@ -45,6 +56,36 @@ func (b *Bot) setup() error {
 	b.Updates = b.API.GetUpdatesChan(u)
 
 	log.Printf("🤖 Auth as %s", b.API.Self.UserName)
+	return nil
+}
+
+func (b *Bot) initDB() error {
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		b.Config.PostgresUser, b.Config.PostgresPassword, b.Config.PostgresHost, b.Config.PostgresPort, b.Config.PostgresDB)
+	
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	
+	b.DB = db
+	
+	err = db.Ping()
+	if err != nil {
+		return fmt.Errorf("failed to ping database: %v", err)
+	}
+	
+	log.Println("✅ Bot connected to database")
+	
+	b.UserRepo = user.NewSQLRepository(db)
+	
+	err = b.UserRepo.CreateTables()
+	if err != nil {
+		return fmt.Errorf("failed to create tables: %v", err)
+	}
+	
+	log.Println("✅ Bot database tables created")
+	
 	return nil
 }
 

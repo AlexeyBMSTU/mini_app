@@ -8,13 +8,17 @@ interface FeaturesProps {
   onTestAction: () => void;
   onShowAlert: () => void;
   onCloseApp: () => void;
+  onGetUserData?: () => void;
+  onSaveUserData?: () => void;
 }
 
 const Features: React.FC<FeaturesProps> = ({
   isTelegram,
   onTestAction,
   onShowAlert,
-  onCloseApp
+  onCloseApp,
+  onGetUserData,
+  onSaveUserData
 }) => {
   return (
     <div className={cardStyles.card}>
@@ -64,6 +68,24 @@ const Features: React.FC<FeaturesProps> = ({
             onClick={onCloseApp}
           >
             ❌ Закрыть приложение
+          </button>
+        )}
+        
+        {onGetUserData && (
+          <button
+            className={buttonStyles.buttonSecondary}
+            onClick={onGetUserData}
+          >
+            📥 Получить данные
+          </button>
+        )}
+        
+        {onSaveUserData && (
+          <button
+            className={buttonStyles.buttonSecondary}
+            onClick={onSaveUserData}
+          >
+            💾 Сохранить данные
           </button>
         )}
       </div>
