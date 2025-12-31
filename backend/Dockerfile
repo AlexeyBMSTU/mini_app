@@ -1,8 +1,11 @@
 # Этап сборки
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
+
+# Устанавливаем Air для горячей перезагрузки
+RUN go install github.com/air-verse/air@latest
 
 # Копируем go mod файлы
 COPY go.mod go.sum ./
@@ -13,47 +16,44 @@ RUN go mod download
 # Копируем исходный код
 COPY . .
 
-# Собираем бинарный файл сервера
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main-server ./cmd/server/main.go
-
-# Собираем бинарный файл бота
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main-bot ./cmd/bot/main.go
+# Создаем директорию для временных файлов Air
+RUN mkdir -p ./tmp
 
 # Финальный этап для сервера
-FROM alpine:latest AS server
+FROM golang:1.25-alpine AS server
 
 # Устанавливаем ca-certificates для HTTPS и обновляем пакеты
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata git
+
+# Копируем Air из этапа сборки
+COPY --from=builder /go/bin/air /go/bin/air
 
 # Создаем директорию для приложения
-WORKDIR /root/
+WORKDIR /app
 
-# Копируем бинарный файл сервера из этапа сборки
-COPY --from=builder /app/main-server .
-
-# Копируем файлы конфигурации
-COPY --from=builder /app/.env .
+# Копируем конфигурацию Air
+COPY --from=builder /app/.air.toml ./
 
 # Экспонируем порт
 EXPOSE 8080
 
-# Запускаем сервер
-CMD ["./main-server"]
+# Запускаем Air для сервера
+CMD ["air", "-c", ".air.toml"]
 
 # Финальный этап для бота
-FROM alpine:latest AS bot
+FROM golang:1.25-alpine AS bot
 
 # Устанавливаем ca-certificates для HTTPS и обновляем пакеты
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata git
+
+# Копируем Air из этапа сборки
+COPY --from=builder /go/bin/air /go/bin/air
 
 # Создаем директорию для приложения
-WORKDIR /root/
+WORKDIR /app
 
-# Копируем бинарный файл бота из этапа сборки
-COPY --from=builder /app/main-bot .
+# Копируем конфигурацию Air для бота
+COPY --from=builder /app/.air.bot.toml ./.air.toml
 
-# Копируем файлы конфигурации
-COPY --from=builder /app/.env .
-
-# Запускаем бота
-CMD ["./main-bot"]
+# Запускаем Air для бота
+CMD ["air", "-c", ".air.toml"]

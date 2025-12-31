@@ -1,4 +1,4 @@
-.PHONY: setup run run-docker run-backend run-frontend build-frontend install clean
+.PHONY: setup run run-docker run-backend run-frontend build-frontend install clean docker-air docker-air-bot docker-air-all
 
 setup:
 	# Копируем .env.example в .env (если его нет)

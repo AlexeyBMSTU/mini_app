@@ -53,6 +53,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend:/app
+      - ./backend/tmp:/app/tmp
 
   # Telegram бот
   bot:
@@ -75,6 +76,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend:/app
+      - ./backend/tmp:/app/tmp
 
 volumes:
   postgres_data:
