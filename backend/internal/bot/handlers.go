@@ -100,9 +100,9 @@ func (b *Bot) handleHelpCommand(message *tgbotapi.Message) {
 }
 
 func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, 
-		"❌ Неизвестная команда. Используйте /help для списка команд.\n\n" +
-		"Или просто напишите мне сообщение — я постараюсь понять!")
+	msg := tgbotapi.NewMessage(message.Chat.ID,
+		"❌ Неизвестная команда. Используйте /help для списка команд.\n\n"+
+			"Или просто напишите мне сообщение — я постараюсь понять!")
 	b.API.Send(msg)
 }
 
@@ -125,7 +125,7 @@ func (b *Bot) handleAboutCommand(message *tgbotapi.Message) {
 
 func (b *Bot) handleTimeCommand(message *tgbotapi.Message) {
 	currentTime := time.Now().Format("15:04:05 02.01.2006")
-	msg := tgbotapi.NewMessage(message.Chat.ID, 
+	msg := tgbotapi.NewMessage(message.Chat.ID,
 		fmt.Sprintf("⏰ Текущее время: <b>%s</b>", currentTime))
 	msg.ParseMode = "HTML"
 	b.API.Send(msg)
@@ -137,7 +137,7 @@ func (b *Bot) handleGreeting(message *tgbotapi.Message) {
 		fmt.Sprintf("Здравствуй, %s! Как твои дела?", message.From.FirstName),
 		fmt.Sprintf("Приветствую, %s! Чем могу помочь?", message.From.FirstName),
 	}
-	
+
 	msg := tgbotapi.NewMessage(message.Chat.ID, responses[time.Now().Unix()%int64(len(responses))])
 	b.API.Send(msg)
 }
@@ -148,7 +148,7 @@ func (b *Bot) handleHowAreYou(message *tgbotapi.Message) {
 		"👍 Всё хорошо, спасибо! Готов помочь тебе.",
 		"✨ Отлично! Работаю в полную силу. А как ты?",
 	}
-	
+
 	msg := tgbotapi.NewMessage(message.Chat.ID, responses[time.Now().Unix()%int64(len(responses))])
 	b.API.Send(msg)
 }
@@ -159,7 +159,7 @@ func (b *Bot) handleThanks(message *tgbotapi.Message) {
 		"🙏 Пожалуйста! Обращайся ещё.",
 		"✨ Не за что! Буду рад помочь снова.",
 	}
-	
+
 	msg := tgbotapi.NewMessage(message.Chat.ID, responses[time.Now().Unix()%int64(len(responses))])
 	b.API.Send(msg)
 }
@@ -170,7 +170,7 @@ func (b *Bot) handleGoodbye(message *tgbotapi.Message) {
 		"Пока! Возвращайся скорее!",
 		"До встречи! Не стесняйся обращаться снова!",
 	}
-	
+
 	msg := tgbotapi.NewMessage(message.Chat.ID, responses[time.Now().Unix()%int64(len(responses))])
 	b.API.Send(msg)
 }
@@ -215,7 +215,7 @@ func (b *Bot) handleDefaultResponse(message *tgbotapi.Message) {
 		fmt.Sprintf("%s, я пока не могу ответить на это. Используй команды или спроси что-то другое!", message.From.FirstName),
 		"Интересный вопрос! Но мои возможности пока ограничены. Попробуй /help для списка команд.",
 	}
-	
+
 	msg := tgbotapi.NewMessage(message.Chat.ID, responses[time.Now().Unix()%int64(len(responses))])
 	b.API.Send(msg)
 }

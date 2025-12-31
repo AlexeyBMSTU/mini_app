@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	
+
 	"mini-app-backend/internal/bot"
 	"mini-app-backend/internal/config"
 	"mini-app-backend/internal/server"

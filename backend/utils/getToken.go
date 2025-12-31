@@ -3,25 +3,25 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"log"
-	"strings"
 	"io"
+	"log"
 	"mini-app-backend/internal/config"
+	"net/http"
+	"strings"
 )
 
 type TokenResponse struct {
-		AccessToken string `json:"access_token"`
-		TokenType   string `json:"token_type"`
-		ExpiresIn   int    `json:"expires_in"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
 }
 
 func GetToken() (TokenResponse, error) {
 	tokenURL := "https://api.avito.ru/token/"
 
 	config := config.Load()
-	formData:= fmt.Sprintf("grant_type=client_credentials&client_id=%s&client_secret=%s", config.AvitoClientId, config.AvitoClientSecret)
-	
+	formData := fmt.Sprintf("grant_type=client_credentials&client_id=%s&client_secret=%s", config.AvitoClientId, config.AvitoClientSecret)
+
 	req, err := http.NewRequest("POST", tokenURL, strings.NewReader(formData))
 	if err != nil {
 		log.Printf("Error creating request to external API: %v", err)
@@ -48,20 +48,20 @@ func GetToken() (TokenResponse, error) {
 		return TokenResponse{}, err
 	}
 
-	defer resp.Body.Close();
+	defer resp.Body.Close()
 
 	var tokenResponse struct {
-			AccessToken string `json:"access_token"`
-			TokenType   string `json:"token_type"`
-			ExpiresIn   int    `json:"expires_in"`
+		AccessToken string `json:"access_token"`
+		TokenType   string `json:"token_type"`
+		ExpiresIn   int    `json:"expires_in"`
 	}
 
 	if err := json.Unmarshal(body, &tokenResponse); err != nil {
-			return TokenResponse{}, fmt.Errorf("error unmarshaling token response: %v", err)
+		return TokenResponse{}, fmt.Errorf("error unmarshaling token response: %v", err)
 	}
 
 	if tokenResponse.AccessToken == "" {
-			return TokenResponse{}, fmt.Errorf("empty access token in response")
+		return TokenResponse{}, fmt.Errorf("empty access token in response")
 	}
 
 	return tokenResponse, nil

@@ -3,23 +3,23 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"log"
 	"io"
+	"log"
+	"net/http"
 )
 
 type UserInfoAvitoResponse struct {
-		Email 			string `json:"email"`
-		Id   				int32 `json:"id"`
-		Name   			string    `json:"name"`
-		Phone   		string    `json:"phone"`
-		Phones   		[]string    `json:"phones"`
-		ProfileUrl   string    `json:"profile_url"`
+	Email      string   `json:"email"`
+	Id         int32    `json:"id"`
+	Name       string   `json:"name"`
+	Phone      string   `json:"phone"`
+	Phones     []string `json:"phones"`
+	ProfileUrl string   `json:"profile_url"`
 }
 
 func GetUserInfoAvito() (UserInfoAvitoResponse, error) {
 	reqURL := "https://api.avito.ru/core/v1/accounts/self"
-	
+
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		log.Printf("Error creating request to external API: %v", err)
@@ -52,19 +52,19 @@ func GetUserInfoAvito() (UserInfoAvitoResponse, error) {
 		return UserInfoAvitoResponse{}, err
 	}
 
-	defer resp.Body.Close();
+	defer resp.Body.Close()
 
 	var userInfoAvitoResponse struct {
-			Email 			string `json:"email"`
-			Id   				int32 `json:"id"`
-			Name   			string    `json:"name"`
-			Phone   		string    `json:"phone"`
-			Phones   		[]string    `json:"phones"`
-			ProfileUrl   string    `json:"profile_url"`
+		Email      string   `json:"email"`
+		Id         int32    `json:"id"`
+		Name       string   `json:"name"`
+		Phone      string   `json:"phone"`
+		Phones     []string `json:"phones"`
+		ProfileUrl string   `json:"profile_url"`
 	}
 
 	if err := json.Unmarshal(body, &userInfoAvitoResponse); err != nil {
-			return UserInfoAvitoResponse{}, fmt.Errorf("error unmarshaling token response: %v", err)
+		return UserInfoAvitoResponse{}, fmt.Errorf("error unmarshaling token response: %v", err)
 	}
 
 	return userInfoAvitoResponse, nil

@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mini-app-backend/utils"
 	"mini-app-backend/internal/handlers"
+	"mini-app-backend/utils"
 	"net/http"
 )
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	category := queryParams.Get("category")
-	
+
 	if category == "" {
 		category = "338"
 	}
-	
+
 	baseURL := "https://api.avito.ru/core/v1/items"
 	reqURL := fmt.Sprintf("%s?category=%s", baseURL, category)
-	
+
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		log.Printf("Error creating request to external API: %v", err)

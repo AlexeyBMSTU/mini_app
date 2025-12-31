@@ -28,7 +28,7 @@ type UserRepository interface {
 	GetUserByID(id int64) (*User, error)
 	UpdateUser(user *User) error
 	GetUserByTelegramID(telegramID int64) (*User, error)
-	
+
 	CreateUserData(userData *UserData) error
 	GetUserDataByUserID(userID int64) (*UserData, error)
 	UpdateUserData(userData *UserData) error

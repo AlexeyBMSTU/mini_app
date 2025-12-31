@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	
+
 	"mini-app-backend/internal/config"
 	"mini-app-backend/internal/server"
 )

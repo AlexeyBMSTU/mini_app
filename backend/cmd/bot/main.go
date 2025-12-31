@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	
+
 	"mini-app-backend/internal/bot"
 	"mini-app-backend/internal/config"
 )

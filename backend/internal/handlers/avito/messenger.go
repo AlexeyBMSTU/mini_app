@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mini-app-backend/utils"
 	"mini-app-backend/internal/handlers"
+	"mini-app-backend/utils"
 	"net/http"
 )
 
-func GetMesseges(w http.ResponseWriter, r *http.Request) {	
-	user_id, _:= utils.GetUserInfoAvito()
+func GetMesseges(w http.ResponseWriter, r *http.Request) {
+	user_id, _ := utils.GetUserInfoAvito()
 
 	reqURL := fmt.Sprintf("https://api.avito.ru/messenger/v2/accounts/%d/chats", user_id.Id)
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -54,7 +54,7 @@ func GetMesseges(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-func SendMessege(w http.ResponseWriter, r *http.Request) {	
+func SendMessege(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	userId := queryParams.Get("user_id")
 	chatId := queryParams.Get("chat_id")

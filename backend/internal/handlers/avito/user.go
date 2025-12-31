@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mini-app-backend/utils"
 	"mini-app-backend/internal/handlers"
+	"mini-app-backend/utils"
 	"net/http"
 )
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	reqURL := "https://api.avito.ru/core/v1/accounts/self"
-	
+
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		log.Printf("Error creating request to external API: %v", err)

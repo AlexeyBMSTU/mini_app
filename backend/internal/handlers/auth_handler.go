@@ -31,10 +31,10 @@ type TelegramAuthRequest struct {
 }
 
 type TelegramAuthResponse struct {
-	Success bool        `json:"success"`
-	User    *user.User  `json:"user,omitempty"`
-	Error   string      `json:"error,omitempty"`
-	Token   string      `json:"token,omitempty"`
+	Success bool       `json:"success"`
+	User    *user.User `json:"user,omitempty"`
+	Error   string     `json:"error,omitempty"`
+	Token   string     `json:"token,omitempty"`
 }
 
 func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {

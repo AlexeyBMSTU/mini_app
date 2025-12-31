@@ -78,7 +78,7 @@ func ParseUserFromInitData(initData string) (map[string]interface{}, error) {
 }
 
 func ValidateAndParseInitData(initData string, botToken string) (bool, map[string]interface{}, error) {
-	if (initData == "dev") {
+	if initData == "dev" {
 		return true, nil, nil
 	}
 
