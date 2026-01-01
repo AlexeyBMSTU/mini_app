@@ -371,3 +371,68 @@ func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 	h.LogInfo(r, "Successfully retrieved clients")
 	h.SendJSON(w, r, response, http.StatusOK)
 }
+
+type SetAvitoCredentialsRequest struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type SetAvitoCredentialsResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
+}
+
+func (h *AuthHandler) SetAvitoCredentials(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "SetAvitoCredentials request")
+
+	if r.Method != http.MethodPost {
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req SetAvitoCredentialsRequest
+	err := h.DecodeJSONBody(r, &req)
+	if err != nil {
+		h.LogError(r, err, "Invalid request body")
+		h.SendError(w, r, err, http.StatusBadRequest)
+		return
+	}
+
+	if req.ClientID == "" || req.ClientSecret == "" {
+		h.LogError(r, nil, "Client ID and Client Secret are required")
+		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "Client ID and Client Secret are required"), http.StatusBadRequest)
+		return
+	}
+
+	// Шифруем и устанавливаем куки для client_id
+	clientIDCookie := &http.Cookie{
+		Name:     "avito_client_id",
+		Value:    req.ClientID,
+		Path:     "/",
+		MaxAge:   86400 * 30, // 30 дней
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(w, clientIDCookie)
+
+	// Шифруем и устанавливаем куки для client_secret
+	clientSecretCookie := &http.Cookie{
+		Name:     "avito_client_secret",
+		Value:    req.ClientSecret,
+		Path:     "/",
+		MaxAge:   86400 * 30, // 30 дней
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(w, clientSecretCookie)
+
+	response := SetAvitoCredentialsResponse{
+		Success: true,
+	}
+
+	h.LogInfo(r, "Successfully set Avito credentials in cookies")
+	h.SendJSON(w, r, response, http.StatusOK)
+}

@@ -88,6 +88,7 @@ func (s *Server) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/user/data/", s.authHandler.SaveUserData)
 	mux.HandleFunc("POST /api/user/client/", s.authHandler.CreateClient)
 	mux.HandleFunc("GET /api/user/clients/", s.authHandler.GetClients)
+	mux.HandleFunc("POST /api/auth/avito/credentials/", s.authHandler.SetAvitoCredentials)
 	
 	mux.HandleFunc("POST /api/message/", s.messageHandler.CreateMessage)
 	mux.HandleFunc("GET /api/messages/", s.messageHandler.GetMessages)

@@ -21,8 +21,23 @@ type TokenResponse struct {
 func GetToken(ctx context.Context) (TokenResponse, error) {
 	tokenURL := "https://api.avito.ru/token/"
 
-	config := config.Load()
-	formData := fmt.Sprintf("grant_type=client_credentials&client_id=%s&client_secret=%s", config.AvitoClientId, config.AvitoClientSecret)
+	// Пытаемся получить client_id и client_secret из контекста
+	clientID, clientIDOk := ctx.Value("avito_client_id").(string)
+	clientSecret, clientSecretOk := ctx.Value("avito_client_secret").(string)
+	
+	// Если в контексте нет данных, используем значения из конфигурации
+	var cfg *config.Config
+	if !clientIDOk || !clientSecretOk {
+		cfg = config.Load()
+		if !clientIDOk {
+			clientID = cfg.AvitoClientId
+		}
+		if !clientSecretOk {
+			clientSecret = cfg.AvitoClientSecret
+		}
+	}
+
+	formData := fmt.Sprintf("grant_type=client_credentials&client_id=%s&client_secret=%s", clientID, clientSecret)
 
 	req, err := http.NewRequest("POST", tokenURL, strings.NewReader(formData))
 	if err != nil {

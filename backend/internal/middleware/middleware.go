@@ -99,6 +99,9 @@ func RecoverPanic(next http.Handler) http.Handler {
 
 func UserCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		
+		// Проверяем и обрабатываем куку user_id
 		cookie, err := r.Cookie("user_id")
 		if err == nil {
 			encryptionUtil := utils.NewEncryptionUtil()
@@ -107,19 +110,79 @@ func UserCookie(next http.Handler) http.Handler {
 			if err == nil {
 				userID, err := strconv.ParseInt(decryptedValue, 10, 64)
 				if err == nil {
-					ctx := context.WithValue(r.Context(), "user_id", userID)
-					r = r.WithContext(ctx)
-					next.ServeHTTP(w, r)
-					return
+					ctx = context.WithValue(ctx, "user_id", userID)
+				}
+			} else {
+				userID, err := strconv.ParseInt(cookie.Value, 10, 64)
+				if err == nil {
+					ctx = context.WithValue(ctx, "user_id", userID)
 				}
 			}
-			
-			userID, err := strconv.ParseInt(cookie.Value, 10, 64)
-			if err == nil {
-				ctx := context.WithValue(r.Context(), "user_id", userID)
-				r = r.WithContext(ctx)
-			}
 		}
+		
+		// Проверяем и обрабатываем куки с учетными данными Avito
+		clientIDCookie, err := r.Cookie("avito_client_id")
+		clientSecretCookie, err2 := r.Cookie("avito_client_secret")
+		
+		if err == nil && err2 == nil {
+			encryptionUtil := utils.NewEncryptionUtil()
+			
+			// Расшифровываем client_id
+			decryptedClientID, err := encryptionUtil.Decrypt(clientIDCookie.Value)
+			if err != nil {
+				decryptedClientID = clientIDCookie.Value
+			}
+			
+			// Расшифровываем client_secret
+			decryptedClientSecret, err := encryptionUtil.Decrypt(clientSecretCookie.Value)
+			if err != nil {
+				decryptedClientSecret = clientSecretCookie.Value
+			}
+			
+			// Добавляем расшифрованные значения в контекст
+			ctx = context.WithValue(ctx, "avito_client_id", decryptedClientID)
+			ctx = context.WithValue(ctx, "avito_client_secret", decryptedClientSecret)
+		}
+		
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func AvitoAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		clientIDCookie, err := r.Cookie("avito_client_id")
+		if err != nil {
+			http.Error(w, "Avito client ID cookie is required", http.StatusUnauthorized)
+			return
+		}
+
+		clientSecretCookie, err := r.Cookie("avito_client_secret")
+		if err != nil {
+			http.Error(w, "Avito client secret cookie is required", http.StatusUnauthorized)
+			return
+		}
+
+		encryptionUtil := utils.NewEncryptionUtil()
+		
+		// Расшифровываем значения из кук
+		decryptedClientID, err := encryptionUtil.Decrypt(clientIDCookie.Value)
+		if err != nil {
+			// Если не удалось расшифровать, пробуем использовать как есть (для обратной совместимости)
+			decryptedClientID = clientIDCookie.Value
+		}
+		
+		decryptedClientSecret, err := encryptionUtil.Decrypt(clientSecretCookie.Value)
+		if err != nil {
+			// Если не удалось расшифровать, пробуем использовать как есть (для обратной совместимости)
+			decryptedClientSecret = clientSecretCookie.Value
+		}
+
+		// Добавляем расшифрованные client_id и client_secret в контекст запроса
+		ctx := context.WithValue(r.Context(), "avito_client_id", decryptedClientID)
+		ctx = context.WithValue(ctx, "avito_client_secret", decryptedClientSecret)
+		r = r.WithContext(ctx)
+
 		next.ServeHTTP(w, r)
 	})
 }

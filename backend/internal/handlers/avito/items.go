@@ -58,5 +58,9 @@ func (h *AvitoHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 
 	requestID := r.Header.Get("X-Request-ID")
 	logger.WithRequestID(requestID).Info("Successfully2 retrieved items")
-	h.SendJSON(w, r, resp.Body, http.StatusOK)
+	
+	// Устанавливаем заголовок Content-Type и отправляем ответ как есть, без повторного кодирования в JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp.Body)
 }
