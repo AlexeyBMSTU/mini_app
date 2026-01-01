@@ -28,8 +28,6 @@ class AvitoService {
 	private async request(endpoint: string, options: RequestInit = {}) {
 		const url = `${this.baseUrl}${endpoint}`
 
-		// const token = await apiService.getToken();
-		// console.log(token)
 		const defaultOptions: RequestInit = {
 			headers: {
 				'Content-Type': 'application/json',

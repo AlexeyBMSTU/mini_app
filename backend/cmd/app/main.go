@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	// Initialize logger
 	logger.SetLogger(logger.NewDefaultLogger())
 
 	cfg := config.Load()

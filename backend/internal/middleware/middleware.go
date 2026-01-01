@@ -29,10 +29,23 @@ func Logging(next http.Handler) http.Handler {
 		
 		logger.WithRequestID(requestID).Infof("Started %s %s", r.Method, r.URL.Path)
 		
-		next.ServeHTTP(w, r)
+		rw := &responseWriter{ResponseWriter: w}
+		next.ServeHTTP(rw, r)
 		
-		logger.WithRequestID(requestID).Infof("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
+		status := rw.status
+		
+		logger.WithRequestID(requestID).Infof("Completed %s %s in %v. Status: %d", r.Method, r.URL.Path, time.Since(start), status)
 	})
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
 }
 
 func CORS(next http.Handler) http.Handler {

@@ -32,7 +32,6 @@ func GetToken(ctx context.Context) (TokenResponse, error) {
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Get logger with Request ID if available
 	requestLogger := logger.GetLogger()
 	if requestID := ctx.Value(middleware.RequestIDKey); requestID != nil {
 		if id, ok := requestID.(string); ok {

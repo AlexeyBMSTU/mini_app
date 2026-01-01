@@ -7,6 +7,7 @@ import (
 	"mini-app-backend/internal/handlers"
 	"mini-app-backend/internal/handlers/avito"
 	"mini-app-backend/internal/logger"
+	"mini-app-backend/internal/message"
 	"mini-app-backend/internal/middleware"
 	"mini-app-backend/internal/user"
 	"net/http"
@@ -15,11 +16,14 @@ import (
 )
 
 type Server struct {
-	config      *config.Config
-	db          *sql.DB
-	authHandler *handlers.AuthHandler
-	userService *user.UserService
-	userRepo    *user.SQLRepository
+	config        *config.Config
+	db            *sql.DB
+	authHandler   *handlers.AuthHandler
+	messageHandler *handlers.MessageHandler
+	userService   *user.UserService
+	userRepo      *user.SQLRepository
+	messageRepo    *message.SQLMessageRepository
+	messageService *message.MessageService
 }
 
 func New(cfg *config.Config) *Server {
@@ -47,10 +51,16 @@ func (s *Server) initDB() error {
 	logger.GetLogger().Info("✅ Connected to database")
 
 	s.userRepo = user.NewSQLRepository(db)
+	s.messageRepo = message.NewSQLMessageRepository(db)
 
 	err = s.userRepo.CreateTables()
 	if err != nil {
-		return fmt.Errorf("failed to create tables: %v", err)
+		return fmt.Errorf("failed to create user tables: %v", err)
+	}
+
+	err = s.messageRepo.CreateMessagesTable()
+	if err != nil {
+		return fmt.Errorf("failed to create messages table: %v", err)
 	}
 
 	logger.GetLogger().Info("✅ Database tables created")
@@ -60,19 +70,29 @@ func (s *Server) initDB() error {
 
 func (s *Server) initServices() {
 	s.userService = user.NewUserService(s.userRepo)
+	s.messageService = message.NewMessageService(s.messageRepo)
 
-	s.authHandler = handlers.NewAuthHandler(s.userService, s.config.TelegramBotToken, s.db)
+	s.authHandler = handlers.NewAuthHandler(s.userService, s.messageService, s.config.TelegramBotToken, s.db, s.config)
+	s.messageHandler = handlers.NewMessageHandler(s.messageService, s.db)
 }
 
 func (s *Server) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.rootHandler)
-	mux.HandleFunc("/health", s.healthHandler)
+	mux.HandleFunc("/health/", s.healthHandler)
 
-	mux.HandleFunc("/api/auth/telegram", s.authHandler.TelegramAuth)
+	mux.HandleFunc("/api/auth/telegram/", s.authHandler.TelegramAuth)
 
-	mux.HandleFunc("/api/user/me", s.authHandler.GetUser)
-	mux.HandleFunc("GET /api/user/data", s.authHandler.GetUserData)
-	mux.HandleFunc("POST /api/user/data", s.authHandler.SaveUserData)
+	mux.HandleFunc("/api/user/me/", s.authHandler.GetUser)
+	mux.HandleFunc("GET /api/user/data/", s.authHandler.GetUserData)
+	mux.HandleFunc("POST /api/user/data/", s.authHandler.SaveUserData)
+	
+	mux.HandleFunc("POST /api/message/", s.messageHandler.CreateMessage)
+	mux.HandleFunc("GET /api/messages/", s.messageHandler.GetMessages)
+	mux.HandleFunc("GET /api/message/", s.messageHandler.GetMessage)
+	mux.HandleFunc("GET /api/message/credentials/", s.messageHandler.GetMessageByCredentials)
+	mux.HandleFunc("PUT /api/message/", s.messageHandler.UpdateMessage)
+	mux.HandleFunc("DELETE /api/message/", s.messageHandler.DeleteMessage)
+	
 	mux.HandleFunc("GET /api/avito/items/", avito.GetItems)
 	mux.HandleFunc("GET /api/avito/messenger/chats/", avito.GetMesseges)
 }
@@ -90,8 +110,9 @@ func (s *Server) Start() error {
 
 	s.setupRoutes(mux)
 
-	// Apply middleware chain
-	handler := middleware.Logging(middleware.CORS(middleware.RecoverPanic(middleware.ContentTypeJSON(mux))))
+	spamProtection := middleware.NewSpamProtectionMiddleware(s.messageService)
+	
+	handler := middleware.Logging(middleware.CORS(middleware.RecoverPanic(middleware.ContentTypeJSON(spamProtection.Protect(mux)))))
 
 	port := s.config.ServerPort
 

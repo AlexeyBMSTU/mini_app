@@ -3,7 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"mini-app-backend/internal/config"
 	"mini-app-backend/internal/errors"
+	"mini-app-backend/internal/message"
 	"mini-app-backend/internal/telegram"
 	"mini-app-backend/internal/user"
 	"net/http"
@@ -12,17 +14,21 @@ import (
 
 type AuthHandler struct {
 	*BaseHandler
-	userService *user.UserService
-	botToken    string
-	db          *sql.DB
+	userService    *user.UserService
+	messageService *message.MessageService
+	botToken       string
+	db             *sql.DB
+	config         *config.Config
 }
 
-func NewAuthHandler(userService *user.UserService, botToken string, db *sql.DB) *AuthHandler {
+func NewAuthHandler(userService *user.UserService, messageService *message.MessageService, botToken string, db *sql.DB, config *config.Config) *AuthHandler {
 	return &AuthHandler{
-		BaseHandler: NewBaseHandler(),
-		userService: userService,
-		botToken:    botToken,
-		db:          db,
+		BaseHandler:    NewBaseHandler(),
+		userService:    userService,
+		messageService: messageService,
+		botToken:       botToken,
+		db:             db,
+		config:         config,
 	}
 }
 
@@ -79,6 +85,16 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		h.LogError(r, err, "Error creating/updating user")
 		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating/updating user", err.Error()), http.StatusInternalServerError)
 		return
+	}
+
+	_, err = h.messageService.CreateMessage(
+		h.config.AvitoClientId,
+		h.config.AvitoClientSecret,
+		"Ваше сообщение по умолчанию",
+		"Автоответчик",
+	)
+	if err != nil {
+		h.LogError(r, err, "Error creating default message")
 	}
 
 	token := "token_" + strconv.FormatInt(createdUser.ID, 10)

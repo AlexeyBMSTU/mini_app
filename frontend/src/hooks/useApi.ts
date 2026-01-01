@@ -17,14 +17,12 @@ export const useApi = (): UseApiReturn => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Инициализация пользователя из Telegram
   useEffect(() => {
     const initUser = async () => {
       try {
         const telegramUser = telegramService.getUser();
         if (telegramUser) {
           setUser(telegramUser);
-          // Автоматическая аутентификация при загрузке
           await authenticateUser(telegramUser);
         }
       } catch (err) {
@@ -37,19 +35,15 @@ export const useApi = (): UseApiReturn => {
     initUser();
   }, []);
 
-  // Аутентификация пользователя
   const authenticateUser = async (userData: TelegramUser) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Получаем initData из Telegram WebApp
       const initData = (window as any).Telegram?.WebApp?.initData || 'dev';
       
-      // Отправляем данные на бэкенд для аутентификации
       const response = await apiService.authenticateUser(userData, initData);
       
-      // Сохраняем данные пользователя в состоянии
       setUser(response.user || userData);
       
       return response;
@@ -62,7 +56,6 @@ export const useApi = (): UseApiReturn => {
     }
   };
 
-  // Получение данных пользователя
   const getUserData = async () => {
     try {
       setLoading(true);
@@ -78,7 +71,6 @@ export const useApi = (): UseApiReturn => {
     }
   };
 
-  // Сохранение данных пользователя
   const saveUserData = async (data: any) => {
     try {
       setLoading(true);
