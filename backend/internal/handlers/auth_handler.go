@@ -405,7 +405,6 @@ func (h *AuthHandler) SetAvitoCredentials(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Шифруем и устанавливаем куки для client_id
 	clientIDCookie := &http.Cookie{
 		Name:     "avito_client_id",
 		Value:    req.ClientID,
@@ -417,7 +416,6 @@ func (h *AuthHandler) SetAvitoCredentials(w http.ResponseWriter, r *http.Request
 	}
 	http.SetCookie(w, clientIDCookie)
 
-	// Шифруем и устанавливаем куки для client_secret
 	clientSecretCookie := &http.Cookie{
 		Name:     "avito_client_secret",
 		Value:    req.ClientSecret,

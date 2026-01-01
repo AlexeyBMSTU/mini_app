@@ -61,7 +61,6 @@ func (h *AvitoHandler) GetMesseges(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Устанавливаем заголовок Content-Type и отправляем ответ как есть, без повторного кодирования в JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp.Body)
@@ -108,7 +107,6 @@ func (h *AvitoHandler) SendMessege(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Устанавливаем заголовок Content-Type и отправляем ответ как есть, без повторного кодирования в JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp.Body)

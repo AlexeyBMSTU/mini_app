@@ -101,7 +101,6 @@ func UserCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		
-		// Проверяем и обрабатываем куку user_id
 		cookie, err := r.Cookie("user_id")
 		if err == nil {
 			encryptionUtil := utils.NewEncryptionUtil()
@@ -120,26 +119,22 @@ func UserCookie(next http.Handler) http.Handler {
 			}
 		}
 		
-		// Проверяем и обрабатываем куки с учетными данными Avito
 		clientIDCookie, err := r.Cookie("avito_client_id")
 		clientSecretCookie, err2 := r.Cookie("avito_client_secret")
 		
 		if err == nil && err2 == nil {
 			encryptionUtil := utils.NewEncryptionUtil()
 			
-			// Расшифровываем client_id
 			decryptedClientID, err := encryptionUtil.Decrypt(clientIDCookie.Value)
 			if err != nil {
 				decryptedClientID = clientIDCookie.Value
 			}
 			
-			// Расшифровываем client_secret
 			decryptedClientSecret, err := encryptionUtil.Decrypt(clientSecretCookie.Value)
 			if err != nil {
 				decryptedClientSecret = clientSecretCookie.Value
 			}
 			
-			// Добавляем расшифрованные значения в контекст
 			ctx = context.WithValue(ctx, "avito_client_id", decryptedClientID)
 			ctx = context.WithValue(ctx, "avito_client_secret", decryptedClientSecret)
 		}
@@ -165,20 +160,16 @@ func AvitoAuth(next http.Handler) http.Handler {
 
 		encryptionUtil := utils.NewEncryptionUtil()
 		
-		// Расшифровываем значения из кук
 		decryptedClientID, err := encryptionUtil.Decrypt(clientIDCookie.Value)
 		if err != nil {
-			// Если не удалось расшифровать, пробуем использовать как есть (для обратной совместимости)
 			decryptedClientID = clientIDCookie.Value
 		}
 		
 		decryptedClientSecret, err := encryptionUtil.Decrypt(clientSecretCookie.Value)
 		if err != nil {
-			// Если не удалось расшифровать, пробуем использовать как есть (для обратной совместимости)
 			decryptedClientSecret = clientSecretCookie.Value
 		}
 
-		// Добавляем расшифрованные client_id и client_secret в контекст запроса
 		ctx := context.WithValue(r.Context(), "avito_client_id", decryptedClientID)
 		ctx = context.WithValue(ctx, "avito_client_secret", decryptedClientSecret)
 		r = r.WithContext(ctx)
