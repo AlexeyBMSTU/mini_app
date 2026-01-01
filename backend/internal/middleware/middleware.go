@@ -4,6 +4,7 @@ import (
 	"context"
 	"mini-app-backend/internal/logger"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,9 +51,17 @@ func (rw *responseWriter) WriteHeader(code int) {
 
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		
+		if origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+		
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
@@ -85,6 +94,20 @@ func RecoverPanic(next http.Handler) http.Handler {
 			}
 		}()
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func UserCookie(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("user_id")
+		if err == nil {
+			userID, err := strconv.ParseInt(cookie.Value, 10, 64)
+			if err == nil {
+				ctx := context.WithValue(r.Context(), "user_id", userID)
+				r = r.WithContext(ctx)
+			}
+		}
 		next.ServeHTTP(w, r)
 	})
 }

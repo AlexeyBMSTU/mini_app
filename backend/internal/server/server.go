@@ -80,6 +80,7 @@ func (s *Server) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.rootHandler)
 	mux.HandleFunc("/health/", s.healthHandler)
 
+	// mux.HandleFunc("/api/auth/telegram/", s.authHandler.TelegramAuth)
 	mux.HandleFunc("/api/auth/telegram/", s.authHandler.TelegramAuth)
 
 	mux.HandleFunc("/api/user/me/", s.authHandler.GetUser)
@@ -114,7 +115,7 @@ func (s *Server) Start() error {
 
 	spamProtection := middleware.NewSpamProtectionMiddleware(s.messageService)
 	
-	handler := middleware.Logging(middleware.CORS(middleware.RecoverPanic(middleware.ContentTypeJSON(spamProtection.Protect(mux)))))
+	handler := middleware.Logging(middleware.CORS(middleware.RecoverPanic(middleware.ContentTypeJSON(middleware.UserCookie(spamProtection.Protect(mux))))))
 
 	port := s.config.ServerPort
 

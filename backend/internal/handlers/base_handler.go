@@ -57,6 +57,28 @@ func (h *BaseHandler) GetUserIDFromHeader(r *http.Request) (int64, error) {
 	return userID, nil
 }
 
+func (h *BaseHandler) GetUserIDFromCookie(r *http.Request) (int64, error) {
+	userID := r.Context().Value("user_id")
+	if userID == nil {
+		return 0, errors.NewAppError(http.StatusUnauthorized, "User ID not found in context")
+	}
+
+	return userID.(int64), nil
+}
+
+func (h *BaseHandler) SetUserCookie(w http.ResponseWriter, userID int64) {
+	cookie := &http.Cookie{
+		Name:     "user_id",
+		Value:    strconv.FormatInt(userID, 10),
+		Path:     "/",
+		MaxAge:   86400 * 30,
+		HttpOnly: true,
+		Secure:   true,     
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(w, cookie)
+}
+
 func (h *BaseHandler) DecodeJSONBody(r *http.Request, target interface{}) error {
 	if err := json.NewDecoder(r.Body).Decode(target); err != nil {
 		h.getLogger(r).Errorf("Error decoding request body: %v", err)

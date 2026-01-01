@@ -80,7 +80,6 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Проверяем, существует ли уже пользователь
 	existingUser, err := h.userService.GetUserByID(req.User.ID)
 	if err != nil {
 		h.LogError(r, err, "Error checking user existence")
@@ -94,7 +93,6 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Создаем нового пользователя
 	createdUser, err := h.userService.CreateOrUpdateUser(req.User)
 	if err != nil {
 		h.LogError(r, err, "Error creating user")
@@ -113,6 +111,8 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := "token_" + strconv.FormatInt(createdUser.ID, 10)
+
+	h.SetUserCookie(w, createdUser.ID)
 
 	response := TelegramAuthResponse{
 		Success: true,
@@ -133,9 +133,9 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.GetUserIDFromHeader(r)
+	userID, err := h.GetUserIDFromCookie(r)
 	if err != nil {
-		h.LogError(r, err, "Failed to get user ID from header")
+		h.LogError(r, err, "Failed to get user ID from cookie")
 		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
@@ -166,9 +166,9 @@ func (h *AuthHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.GetUserIDFromHeader(r)
+	userID, err := h.GetUserIDFromCookie(r)
 	if err != nil {
-		h.LogError(r, err, "Failed to get user ID from header")
+		h.LogError(r, err, "Failed to get user ID from cookie")
 		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
@@ -193,9 +193,9 @@ func (h *AuthHandler) SaveUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.GetUserIDFromHeader(r)
+	userID, err := h.GetUserIDFromCookie(r)
 	if err != nil {
-		h.LogError(r, err, "Failed to get user ID from header")
+		h.LogError(r, err, "Failed to get user ID from cookie")
 		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
@@ -246,9 +246,9 @@ func (h *AuthHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.GetUserIDFromHeader(r)
+	userID, err := h.GetUserIDFromCookie(r)
 	if err != nil {
-		h.LogError(r, err, "Failed to get user ID from header")
+		h.LogError(r, err, "Failed to get user ID from cookie")
 		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
@@ -305,23 +305,19 @@ func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получаем user_id из заголовка
-	userID, err := h.GetUserIDFromHeader(r)
+	userID, err := h.GetUserIDFromCookie(r)
 	if err != nil {
-		h.LogError(r, err, "Failed to get user ID from header")
+		h.LogError(r, err, "Failed to get user ID from cookie")
 		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
-	// Получаем параметры пагинации из query string
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 
-	// Устанавливаем значения по умолчанию
-	limit := 10  // по умолчанию 10 записей
-	offset := 0  // по умолчанию с начала
+	limit := 10 
+	offset := 0 
 
-	// Парсим limit, если он передан
 	if limitStr != "" {
 		parsedLimit, err := strconv.Atoi(limitStr)
 		if err != nil || parsedLimit <= 0 {
@@ -332,7 +328,6 @@ func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 		limit = parsedLimit
 	}
 
-	// Парсим offset, если он передан
 	if offsetStr != "" {
 		parsedOffset, err := strconv.Atoi(offsetStr)
 		if err != nil || parsedOffset < 0 {
@@ -343,7 +338,6 @@ func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 		offset = parsedOffset
 	}
 
-	// Получаем клиентов с пагинацией для определенного пользователя
 	clients, err := h.userService.GetClientsByUserIDWithPagination(userID, limit, offset)
 	if err != nil {
 		h.LogError(r, err, "Error getting clients")
@@ -351,7 +345,6 @@ func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получаем общее количество клиентов для определенного пользователя
 	totalCount, err := h.userService.GetClientsCountByUserID(userID)
 	if err != nil {
 		h.LogError(r, err, "Error getting clients count")

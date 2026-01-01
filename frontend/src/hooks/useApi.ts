@@ -20,6 +20,17 @@ export const useApi = (): UseApiReturn => {
   useEffect(() => {
     const initUser = async () => {
       try {
+        try {
+          const currentUser = await apiService.getCurrentUser();
+          if (currentUser && currentUser.id) {
+            setUser(currentUser);
+            setLoading(false);
+            return;
+          }
+        } catch {
+          console.log('User not authenticated via cookies, proceeding with Telegram auth');
+        }
+
         const telegramUser = telegramService.getUser();
         if (telegramUser) {
           setUser(telegramUser);
