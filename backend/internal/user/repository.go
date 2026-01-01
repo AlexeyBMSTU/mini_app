@@ -224,6 +224,33 @@ func (r *SQLRepository) CreateTables() error {
 		return err
 	}
 
+	clientsTable := `
+		CREATE TABLE IF NOT EXISTS clients (
+			id SERIAL PRIMARY KEY,
+			client_id VARCHAR(255) NOT NULL,
+			client_secret VARCHAR(255) NOT NULL,
+			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			created_at TIMESTAMP NOT NULL,
+			updated_at TIMESTAMP NOT NULL
+		);
+	`
+
+	_, err = r.db.Exec(clientsTable)
+	if err != nil {
+		log.Printf("Error creating clients table: %v", err)
+		return err
+	}
+
+	clientsIndex := `
+		CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
+	`
+
+	_, err = r.db.Exec(clientsIndex)
+	if err != nil {
+		log.Printf("Error creating clients index: %v", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -296,4 +323,256 @@ func (r *SQLRepository) GetUserDataJSON(userID int64) (map[string]interface{}, e
 	}
 
 	return data, nil
+}
+
+func (r *SQLRepository) CreateClient(client *Client) error {
+	query := `
+		INSERT INTO clients (client_id, client_secret, user_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
+	`
+
+	var id int64
+	err := r.db.QueryRow(query,
+		client.ClientID,
+		client.ClientSecret,
+		client.UserID,
+		client.CreatedAt,
+		client.UpdatedAt,
+	).Scan(&id)
+
+	if err != nil {
+		log.Printf("Error creating client: %v", err)
+		return err
+	}
+
+	client.ID = id
+	return nil
+}
+
+func (r *SQLRepository) GetClientByUserID(userID int64) (*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	row := r.db.QueryRow(query, userID)
+
+	client := &Client{}
+	err := row.Scan(
+		&client.ID,
+		&client.ClientID,
+		&client.ClientSecret,
+		&client.UserID,
+		&client.CreatedAt,
+		&client.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("Error getting client by user ID: %v", err)
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func (r *SQLRepository) GetClientByCredentials(clientID, clientSecret string) (*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		WHERE client_id = $1 AND client_secret = $2
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	row := r.db.QueryRow(query, clientID, clientSecret)
+
+	client := &Client{}
+	err := row.Scan(
+		&client.ID,
+		&client.ClientID,
+		&client.ClientSecret,
+		&client.UserID,
+		&client.CreatedAt,
+		&client.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("Error getting client by credentials: %v", err)
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func (r *SQLRepository) GetClientByID(clientID string) (*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		WHERE client_id = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	row := r.db.QueryRow(query, clientID)
+
+	client := &Client{}
+	err := row.Scan(
+		&client.ID,
+		&client.ClientID,
+		&client.ClientSecret,
+		&client.UserID,
+		&client.CreatedAt,
+		&client.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("Error getting client by ID: %v", err)
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func (r *SQLRepository) GetClientsWithPagination(limit, offset int) ([]*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		log.Printf("Error getting clients with pagination: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var clients []*Client
+	for rows.Next() {
+		client := &Client{}
+		err := rows.Scan(
+			&client.ID,
+			&client.ClientID,
+			&client.ClientSecret,
+			&client.UserID,
+			&client.CreatedAt,
+			&client.UpdatedAt,
+		)
+		if err != nil {
+			log.Printf("Error scanning client: %v", err)
+			return nil, err
+		}
+		clients = append(clients, client)
+	}
+
+	return clients, nil
+}
+
+func (r *SQLRepository) GetClientsByUserIDWithPagination(userID int64, limit, offset int) ([]*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.db.Query(query, userID, limit, offset)
+	if err != nil {
+		log.Printf("Error getting clients by user ID with pagination: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var clients []*Client
+	for rows.Next() {
+		client := &Client{}
+		err := rows.Scan(
+			&client.ID,
+			&client.ClientID,
+			&client.ClientSecret,
+			&client.UserID,
+			&client.CreatedAt,
+			&client.UpdatedAt,
+		)
+		if err != nil {
+			log.Printf("Error scanning client: %v", err)
+			return nil, err
+		}
+		clients = append(clients, client)
+	}
+
+	return clients, nil
+}
+
+func (r *SQLRepository) GetClientsCount() (int, error) {
+	query := `SELECT COUNT(*) FROM clients`
+
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		log.Printf("Error getting clients count: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *SQLRepository) GetClientsCountByUserID(userID int64) (int, error) {
+	query := `SELECT COUNT(*) FROM clients WHERE user_id = $1`
+
+	var count int
+	err := r.db.QueryRow(query, userID).Scan(&count)
+	if err != nil {
+		log.Printf("Error getting clients count by user ID: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *SQLRepository) GetClientBySecret(clientSecret string) (*Client, error) {
+	query := `
+		SELECT id, client_id, client_secret, user_id, created_at, updated_at
+		FROM clients
+		WHERE client_secret = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	row := r.db.QueryRow(query, clientSecret)
+
+	client := &Client{}
+	err := row.Scan(
+		&client.ID,
+		&client.ClientID,
+		&client.ClientSecret,
+		&client.UserID,
+		&client.CreatedAt,
+		&client.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		log.Printf("Error getting client by secret: %v", err)
+		return nil, err
+	}
+
+	return client, nil
 }

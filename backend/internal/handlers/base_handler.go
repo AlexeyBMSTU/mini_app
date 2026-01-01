@@ -46,7 +46,7 @@ func (h *BaseHandler) SendError(w http.ResponseWriter, r *http.Request, err erro
 func (h *BaseHandler) GetUserIDFromHeader(r *http.Request) (int64, error) {
 	userIDStr := r.Header.Get("X-User-ID")
 	if userIDStr == "" {
-		return 0, errors.NewAppError(http.StatusBadRequest, "User ID is required")
+		return 0, errors.NewAppError(http.StatusBadRequest, "X-User-ID is required")
 	}
 
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)

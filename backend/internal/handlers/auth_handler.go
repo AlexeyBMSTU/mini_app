@@ -80,10 +80,25 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Проверяем, существует ли уже пользователь
+	existingUser, err := h.userService.GetUserByID(req.User.ID)
+	if err != nil {
+		h.LogError(r, err, "Error checking user existence")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error checking user existence", err.Error()), http.StatusInternalServerError)
+		return
+	}
+	
+	if existingUser != nil {
+		h.LogError(r, nil, "User already exists")
+		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "User already exists"), http.StatusBadRequest)
+		return
+	}
+	
+	// Создаем нового пользователя
 	createdUser, err := h.userService.CreateOrUpdateUser(req.User)
 	if err != nil {
-		h.LogError(r, err, "Error creating/updating user")
-		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating/updating user", err.Error()), http.StatusInternalServerError)
+		h.LogError(r, err, "Error creating user")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating user", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
@@ -209,4 +224,147 @@ func (h *AuthHandler) SaveUserData(w http.ResponseWriter, r *http.Request) {
 
 	h.LogInfo(r, "Successfully saved user data")
 	h.SendJSON(w, r, map[string]bool{"success": true}, http.StatusOK)
+}
+
+type CreateClientRequest struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+
+type CreateClientResponse struct {
+	Success bool        `json:"success"`
+	Client  *user.Client `json:"client,omitempty"`
+	Error   string      `json:"error,omitempty"`
+}
+
+func (h *AuthHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "CreateClient request")
+
+	if r.Method != http.MethodPost {
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, err := h.GetUserIDFromHeader(r)
+	if err != nil {
+		h.LogError(r, err, "Failed to get user ID from header")
+		h.SendError(w, r, err, http.StatusBadRequest)
+		return
+	}
+
+	var req CreateClientRequest
+	err = h.DecodeJSONBody(r, &req)
+	if err != nil {
+		h.LogError(r, err, "Invalid request body")
+		h.SendError(w, r, err, http.StatusBadRequest)
+		return
+	}
+
+	if req.ClientID == "" || req.ClientSecret == "" {
+		h.LogError(r, nil, "Client ID and Client Secret are required")
+		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "Client ID and Client Secret are required"), http.StatusBadRequest)
+		return
+	}
+
+	client, err := h.userService.CreateClient(userID, req.ClientID, req.ClientSecret)
+	if err != nil {
+		h.LogError(r, err, "Error creating client")
+		
+		if appErr, ok := err.(*errors.AppError); ok && appErr.Code == http.StatusConflict {
+			h.SendError(w, r, err, appErr.Code)
+			return
+		}
+		
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating client", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	response := CreateClientResponse{
+		Success: true,
+		Client:  client,
+	}
+
+	h.LogInfo(r, "Successfully created client")
+	h.SendJSON(w, r, response, http.StatusCreated)
+}
+
+type GetClientsResponse struct {
+	Success   bool        `json:"success"`
+	Clients   []*user.Client `json:"clients,omitempty"`
+	TotalCount int        `json:"total_count,omitempty"`
+	Error     string      `json:"error,omitempty"`
+}
+
+func (h *AuthHandler) GetClients(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "GetClients request")
+
+	if r.Method != http.MethodGet {
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем user_id из заголовка
+	userID, err := h.GetUserIDFromHeader(r)
+	if err != nil {
+		h.LogError(r, err, "Failed to get user ID from header")
+		h.SendError(w, r, err, http.StatusBadRequest)
+		return
+	}
+
+	// Получаем параметры пагинации из query string
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	// Устанавливаем значения по умолчанию
+	limit := 10  // по умолчанию 10 записей
+	offset := 0  // по умолчанию с начала
+
+	// Парсим limit, если он передан
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err != nil || parsedLimit <= 0 {
+			h.LogError(r, err, "Invalid limit parameter")
+			h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "Invalid limit parameter"), http.StatusBadRequest)
+			return
+		}
+		limit = parsedLimit
+	}
+
+	// Парсим offset, если он передан
+	if offsetStr != "" {
+		parsedOffset, err := strconv.Atoi(offsetStr)
+		if err != nil || parsedOffset < 0 {
+			h.LogError(r, err, "Invalid offset parameter")
+			h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "Invalid offset parameter"), http.StatusBadRequest)
+			return
+		}
+		offset = parsedOffset
+	}
+
+	// Получаем клиентов с пагинацией для определенного пользователя
+	clients, err := h.userService.GetClientsByUserIDWithPagination(userID, limit, offset)
+	if err != nil {
+		h.LogError(r, err, "Error getting clients")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error getting clients", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	// Получаем общее количество клиентов для определенного пользователя
+	totalCount, err := h.userService.GetClientsCountByUserID(userID)
+	if err != nil {
+		h.LogError(r, err, "Error getting clients count")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error getting clients count", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	response := GetClientsResponse{
+		Success:    true,
+		Clients:    clients,
+		TotalCount: totalCount,
+	}
+
+	h.LogInfo(r, "Successfully retrieved clients")
+	h.SendJSON(w, r, response, http.StatusOK)
 }
