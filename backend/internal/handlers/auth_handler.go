@@ -3,15 +3,15 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
-	"net/http"
-	"strconv"
-
+	"mini-app-backend/internal/errors"
 	"mini-app-backend/internal/telegram"
 	"mini-app-backend/internal/user"
+	"net/http"
+	"strconv"
 )
 
 type AuthHandler struct {
+	*BaseHandler
 	userService *user.UserService
 	botToken    string
 	db          *sql.DB
@@ -19,6 +19,7 @@ type AuthHandler struct {
 
 func NewAuthHandler(userService *user.UserService, botToken string, db *sql.DB) *AuthHandler {
 	return &AuthHandler{
+		BaseHandler: NewBaseHandler(),
 		userService: userService,
 		botToken:    botToken,
 		db:          db,
@@ -38,40 +39,45 @@ type TelegramAuthResponse struct {
 }
 
 func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "TelegramAuth request")
+
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
 		return
 	}
 
 	var req TelegramAuthRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
+	err := h.DecodeJSONBody(r, &req)
 	if err != nil {
-		log.Printf("Invalid request body: %v", err)
-		SendErrorResponse(w, "Invalid request body", http.StatusBadRequest)
+		h.LogError(r, err, "Invalid request body")
+		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	if req.User == nil || req.InitData == "" {
-		SendErrorResponse(w, "User and initData are required", http.StatusBadRequest)
+		h.LogError(r, nil, "User and initData are required")
+		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "User and initData are required"), http.StatusBadRequest)
 		return
 	}
 
 	isValid, _, err := telegram.ValidateAndParseInitData(req.InitData, h.botToken)
 	if err != nil {
-		log.Printf("Error validating initData: %v", err)
-		SendErrorResponse(w, "Error validating initData", http.StatusInternalServerError)
+		h.LogError(r, err, "Error validating initData")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error validating initData", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	if !isValid {
-		SendErrorResponse(w, "Invalid initData", http.StatusUnauthorized)
+		h.LogError(r, nil, "Invalid initData")
+		h.SendError(w, r, errors.NewAppError(http.StatusUnauthorized, "Invalid initData"), http.StatusUnauthorized)
 		return
 	}
 
 	createdUser, err := h.userService.CreateOrUpdateUser(req.User)
 	if err != nil {
-		log.Printf("Error creating/updating user: %v", err)
-		SendErrorResponse(w, "Error creating/updating user", http.StatusInternalServerError)
+		h.LogError(r, err, "Error creating/updating user")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating/updating user", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
@@ -83,109 +89,108 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		Token:   token,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	h.LogInfo(r, "Successfully authenticated user")
+	h.SendJSON(w, r, response, http.StatusOK)
 }
 
 func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "GetUser request")
+
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
 		return
 	}
 
-	userIDStr := r.Header.Get("X-User-ID")
-	if userIDStr == "" {
-		SendErrorResponse(w, "User ID is required", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := h.GetUserIDFromHeader(r)
 	if err != nil {
-		SendErrorResponse(w, "Invalid User ID", http.StatusBadRequest)
+		h.LogError(r, err, "Failed to get user ID from header")
+		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.userService.GetUserByID(userID)
 	if err != nil {
-		log.Printf("Error getting user: %v", err)
-		SendErrorResponse(w, "Error getting user", http.StatusInternalServerError)
+		h.LogError(r, err, "Error getting user")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error getting user", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	if user == nil {
-		SendErrorResponse(w, "User not found", http.StatusNotFound)
+		h.LogError(r, nil, "User not found")
+		h.SendError(w, r, errors.NewAppError(http.StatusNotFound, "User not found"), http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	h.LogInfo(r, "Successfully retrieved user")
+	h.SendJSON(w, r, user, http.StatusOK)
 }
 
 func (h *AuthHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "GetUserData request")
 
-	userIDStr := r.Header.Get("X-User-ID")
-	if userIDStr == "" {
-		SendErrorResponse(w, "User ID is required", http.StatusBadRequest)
+	if r.Method != http.MethodGet {
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := h.GetUserIDFromHeader(r)
 	if err != nil {
-		SendErrorResponse(w, "Invalid User ID", http.StatusBadRequest)
+		h.LogError(r, err, "Failed to get user ID from header")
+		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	userData, err := h.userService.GetUserDataByUserID(userID)
 	if err != nil {
-		log.Printf("Error getting user data: %v", err)
-		SendErrorResponse(w, "Error getting user data", http.StatusInternalServerError)
+		h.LogError(r, err, "Error getting user data")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error getting user data", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userData)
+	h.LogInfo(r, "Successfully retrieved user data")
+	h.SendJSON(w, r, userData, http.StatusOK)
 }
 
 func (h *AuthHandler) SaveUserData(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "SaveUserData request")
 
-	userIDStr := r.Header.Get("X-User-ID")
-	if userIDStr == "" {
-		SendErrorResponse(w, "User ID is required", http.StatusBadRequest)
+	if r.Method != http.MethodPost {
+		h.LogError(r, nil, "Method not allowed")
+		h.SendError(w, r, errors.NewAppError(http.StatusMethodNotAllowed, "Method not allowed"), http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := h.GetUserIDFromHeader(r)
 	if err != nil {
-		SendErrorResponse(w, "Invalid User ID", http.StatusBadRequest)
+		h.LogError(r, err, "Failed to get user ID from header")
+		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	var data map[string]interface{}
-	err = json.NewDecoder(r.Body).Decode(&data)
+	err = h.DecodeJSONBody(r, &data)
 	if err != nil {
-		SendErrorResponse(w, "Invalid request body", http.StatusBadRequest)
+		h.LogError(r, err, "Invalid request body")
+		h.SendError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	dataJSON, err := json.Marshal(data)
 	if err != nil {
-		SendErrorResponse(w, "Error marshaling data", http.StatusInternalServerError)
+		h.LogError(r, err, "Error marshaling data")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error marshaling data", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	_, err = h.userService.SaveUserData(userID, string(dataJSON))
 	if err != nil {
-		log.Printf("Error saving user data: %v", err)
-		SendErrorResponse(w, "Error saving user data", http.StatusInternalServerError)
+		h.LogError(r, err, "Error saving user data")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error saving user data", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
-}
-
-func SendErrorResponse(w http.ResponseWriter, message string, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(map[string]string{"error": message})
+	h.LogInfo(r, "Successfully saved user data")
+	h.SendJSON(w, r, map[string]bool{"success": true}, http.StatusOK)
 }

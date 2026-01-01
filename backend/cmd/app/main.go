@@ -1,25 +1,27 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"sync"
-
 	"mini-app-backend/internal/bot"
 	"mini-app-backend/internal/config"
+	"mini-app-backend/internal/logger"
 	"mini-app-backend/internal/server"
+	"net/http"
+	"sync"
 )
 
 func main() {
+	// Initialize logger
+	logger.SetLogger(logger.NewDefaultLogger())
+
 	cfg := config.Load()
 
 	if cfg.TelegramBotToken == "" {
-		log.Fatal("❌ TELEGRAM_BOT_TOKEN не установлен")
+		logger.GetLogger().Fatal("❌ TELEGRAM_BOT_TOKEN не установлен")
 	}
 
 	tgBot, err := bot.New(cfg)
 	if err != nil {
-		log.Fatalf("Failed created bot: %v", err)
+		logger.GetLogger().Fatalf("Failed created bot: %v", err)
 	}
 
 	httpServer := server.New(cfg)
@@ -29,18 +31,18 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		log.Println("🤖 Start Telegram bot...")
+		logger.GetLogger().Info("🤖 Start Telegram bot...")
 		tgBot.Start()
 	}()
 
 	go func() {
 		defer wg.Done()
-		log.Println("🌐 Start HTTP server...")
+		logger.GetLogger().Info("🌐 Start HTTP server...")
 		if err := httpServer.Start(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Failed start HTTP server: %v", err)
+			logger.GetLogger().Fatalf("Failed start HTTP server: %v", err)
 		}
 	}()
 
-	log.Println("✅ All services started")
+	logger.GetLogger().Info("✅ All services started")
 	wg.Wait()
 }

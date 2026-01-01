@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,7 +18,7 @@ type UserInfoAvitoResponse struct {
 	ProfileUrl string   `json:"profile_url"`
 }
 
-func GetUserInfoAvito() (UserInfoAvitoResponse, error) {
+func GetUserInfoAvito(ctx context.Context) (UserInfoAvitoResponse, error) {
 	reqURL := "https://api.avito.ru/core/v1/accounts/self"
 
 	req, err := http.NewRequest("GET", reqURL, nil)
@@ -26,7 +27,7 @@ func GetUserInfoAvito() (UserInfoAvitoResponse, error) {
 		return UserInfoAvitoResponse{}, err
 	}
 
-	token, _ := GetToken()
+	token, _ := GetToken(ctx)
 	log.Printf("Token: %s", string(token.AccessToken))
 
 	authHeader := fmt.Sprintf("%s %s", token.TokenType, token.AccessToken)

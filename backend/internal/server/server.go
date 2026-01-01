@@ -3,30 +3,16 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"mini-app-backend/internal/config"
 	"mini-app-backend/internal/handlers"
 	"mini-app-backend/internal/handlers/avito"
+	"mini-app-backend/internal/logger"
+	"mini-app-backend/internal/middleware"
 	"mini-app-backend/internal/user"
 	"net/http"
 
 	_ "github.com/lib/pq"
 )
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 type Server struct {
 	config      *config.Config
@@ -58,7 +44,7 @@ func (s *Server) initDB() error {
 		return fmt.Errorf("failed to ping database: %v", err)
 	}
 
-	log.Println("✅ Connected to database")
+	logger.GetLogger().Info("✅ Connected to database")
 
 	s.userRepo = user.NewSQLRepository(db)
 
@@ -67,7 +53,7 @@ func (s *Server) initDB() error {
 		return fmt.Errorf("failed to create tables: %v", err)
 	}
 
-	log.Println("✅ Database tables created")
+	logger.GetLogger().Info("✅ Database tables created")
 
 	return nil
 }
@@ -104,12 +90,13 @@ func (s *Server) Start() error {
 
 	s.setupRoutes(mux)
 
-	handler := corsMiddleware(mux)
+	// Apply middleware chain
+	handler := middleware.Logging(middleware.CORS(middleware.RecoverPanic(middleware.ContentTypeJSON(mux))))
 
 	port := s.config.ServerPort
 
 	addr := fmt.Sprintf(":%s", port)
-	log.Printf("🚀 Starting HTTP server on PORT with %s", port)
+	logger.GetLogger().Infof("🚀 Starting HTTP server on PORT with %s", port)
 
 	return http.ListenAndServe(addr, handler)
 }
@@ -121,11 +108,11 @@ func (s *Server) rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "🤖 Server start! PORT: %s", s.config.ServerPort)
-	log.Printf("📝 Request to the root path: %s", r.RemoteAddr)
+	logger.GetLogger().Infof("📝 Request to the root path: %s", r.RemoteAddr)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"status": "ok", "port": "%s"}`, s.config.ServerPort)
-	log.Printf("💓 Check health от %s", r.RemoteAddr)
+	logger.GetLogger().Infof("💓 Check health от %s", r.RemoteAddr)
 }

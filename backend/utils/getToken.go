@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"mini-app-backend/internal/config"
+	"mini-app-backend/internal/logger"
+	"mini-app-backend/internal/middleware"
 	"net/http"
 	"strings"
 )
@@ -16,7 +18,7 @@ type TokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-func GetToken() (TokenResponse, error) {
+func GetToken(ctx context.Context) (TokenResponse, error) {
 	tokenURL := "https://api.avito.ru/token/"
 
 	config := config.Load()
@@ -24,27 +26,35 @@ func GetToken() (TokenResponse, error) {
 
 	req, err := http.NewRequest("POST", tokenURL, strings.NewReader(formData))
 	if err != nil {
-		log.Printf("Error creating request to external API: %v", err)
+		logger.Errorf("Error creating request to external API: %v", err)
 		return TokenResponse{}, err
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	// Get logger with Request ID if available
+	requestLogger := logger.GetLogger()
+	if requestID := ctx.Value(middleware.RequestIDKey); requestID != nil {
+		if id, ok := requestID.(string); ok {
+			requestLogger = logger.WithRequestID(id)
+		}
+	}
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Error making request to external API: %v", err)
+		requestLogger.Errorf("Error making request to external API: %v", err)
 		return TokenResponse{}, err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Error reading response from external API: %v", err)
+		requestLogger.Errorf("Error reading response from external API: %v", err)
 		return TokenResponse{}, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("External API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
+		requestLogger.Errorf("External API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
 		return TokenResponse{}, err
 	}
 

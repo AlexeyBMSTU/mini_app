@@ -2,102 +2,108 @@ package avito
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"mini-app-backend/internal/handlers"
+	"mini-app-backend/internal/errors"
 	"mini-app-backend/utils"
 	"net/http"
 )
 
 func GetMesseges(w http.ResponseWriter, r *http.Request) {
-	user_id, _ := utils.GetUserInfoAvito()
+	if avitoHandler == nil {
+		avitoHandler = NewAvitoHandler()
+	}
+	avitoHandler.GetMesseges(w, r)
+}
+
+func SendMessege(w http.ResponseWriter, r *http.Request) {
+	if avitoHandler == nil {
+		avitoHandler = NewAvitoHandler()
+	}
+	avitoHandler.SendMessege(w, r)
+}
+
+func (h *AvitoHandler) GetMesseges(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "GetMesseges request")
+
+	user_id, err := utils.GetUserInfoAvito(r.Context())
+	if err != nil {
+		h.LogError(r, err, "Failed to get user info")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Failed to get user info", err.Error()), http.StatusInternalServerError)
+		return
+	}
 
 	reqURL := fmt.Sprintf("https://api.avito.ru/messenger/v2/accounts/%d/chats", user_id.Id)
-	req, err := http.NewRequest("GET", reqURL, nil)
+
+	token, err := utils.GetToken(r.Context())
 	if err != nil {
-		log.Printf("Error creating request to external API: %v", err)
-		handlers.SendErrorResponse(w, "Error creating request to external API", http.StatusInternalServerError)
+		h.LogError(r, err, "Failed to get token")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Failed to get token", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	token, _ := utils.GetToken()
-	log.Printf("Token: %s", string(token.AccessToken))
+	h.LogDebug(r, "Token obtained")
 
-	authHeader := fmt.Sprintf("%s %s", token.TokenType, token.AccessToken)
+	authHeader := token.TokenType + " " + token.AccessToken
 
-	req.Header.Set("Authorization", authHeader)
-	req.Header.Set("Content-Type", "application/json")
+	h.LogDebug(r, fmt.Sprintf(("authToken: %s"), authHeader))
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := h.httpClient.Get(r.Context(), reqURL, map[string]string{
+		"Authorization": authHeader,
+	})
 	if err != nil {
-		log.Printf("Error making request to external API: %v", err)
-		handlers.SendErrorResponse(w, "Error making request to external API", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Error reading response from external API: %v", err)
-		handlers.SendErrorResponse(w, "Error reading response from external API", http.StatusInternalServerError)
+		h.LogError(r, err, "Error making request to external API")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error making request to external API", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("External API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
-		handlers.SendErrorResponse(w, fmt.Sprintf("External API returned status: %d", resp.StatusCode), resp.StatusCode)
+		h.LogError(r, nil, "External API returned non-OK status")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(resp.StatusCode, "External API returned non-OK status", string(resp.Body)), resp.StatusCode)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	h.SendJSON(w, r, resp.Body, http.StatusOK)
 }
 
-func SendMessege(w http.ResponseWriter, r *http.Request) {
+func (h *AvitoHandler) SendMessege(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "SendMessege request")
+
 	queryParams := r.URL.Query()
 	userId := queryParams.Get("user_id")
 	chatId := queryParams.Get("chat_id")
 
-	reqURL := fmt.Sprintf("https://api.avito.ru/messenger/v1/accounts/%s/chats/%s/messages", userId, chatId)
-
-	req, err := http.NewRequest("GET", reqURL, nil)
-	if err != nil {
-		log.Printf("Error creating request to external API: %v", err)
-		handlers.SendErrorResponse(w, "Error creating request to external API", http.StatusInternalServerError)
+	if userId == "" || chatId == "" {
+		h.LogError(r, nil, "Missing required parameters")
+		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "Missing required parameters"), http.StatusBadRequest)
 		return
 	}
 
-	token, _ := utils.GetToken()
-	log.Printf("Token: %s", string(token.AccessToken))
+	reqURL := fmt.Sprintf("https://api.avito.ru/core/v1/messenger/chats/%s/messages/%s", userId, chatId)
 
-	authHeader := fmt.Sprintf("%s %s", token.TokenType, token.AccessToken)
-
-	req.Header.Set("Authorization", authHeader)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	token, err := utils.GetToken(r.Context())
 	if err != nil {
-		log.Printf("Error making request to external API: %v", err)
-		handlers.SendErrorResponse(w, "Error making request to external API", http.StatusInternalServerError)
+		h.LogError(r, err, "Failed to get token")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Failed to get token", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	h.LogDebug(r, "Token obtained")
+
+	authHeader := token.TokenType + " " + token.AccessToken
+
+	resp, err := h.httpClient.Get(r.Context(), reqURL, map[string]string{
+		"Authorization": authHeader,
+	})
 	if err != nil {
-		log.Printf("Error reading response from external API: %v", err)
-		handlers.SendErrorResponse(w, "Error reading response from external API", http.StatusInternalServerError)
+		h.LogError(r, err, "Error making request to external API")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error making request to external API", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("External API returned non-OK status: %d, body: %s", resp.StatusCode, string(body))
-		handlers.SendErrorResponse(w, fmt.Sprintf("External API returned status: %d", resp.StatusCode), resp.StatusCode)
+		h.LogError(r, nil, "External API returned non-OK status")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(resp.StatusCode, "External API returned non-OK status", string(resp.Body)), resp.StatusCode)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	h.SendJSON(w, r, resp.Body, http.StatusOK)
 }

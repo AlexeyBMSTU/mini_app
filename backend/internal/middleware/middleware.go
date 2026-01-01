@@ -1,0 +1,77 @@
+package middleware
+
+import (
+	"context"
+	"mini-app-backend/internal/logger"
+	"net/http"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type contextKey string
+
+const RequestIDKey contextKey = "requestID"
+
+func Logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		
+		requestID := r.Header.Get("X-Request-ID")
+		if requestID == "" {
+			requestID = uuid.New().String()
+		}
+		
+		ctx := context.WithValue(r.Context(), RequestIDKey, requestID)
+		r = r.WithContext(ctx)
+		
+		w.Header().Set("X-Request-ID", requestID)
+		
+		logger.WithRequestID(requestID).Infof("Started %s %s", r.Method, r.URL.Path)
+		
+		next.ServeHTTP(w, r)
+		
+		logger.WithRequestID(requestID).Infof("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
+	})
+}
+
+func CORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func ContentTypeJSON(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
+			if r.Header.Get("Content-Type") != "application/json" {
+				http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RecoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Errorf("Panic recovered: %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
