@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"mini-app-backend/internal/errors"
 	"mini-app-backend/internal/logger"
+	"mini-app-backend/internal/utils"
 	"net/http"
 	"strconv"
 )
@@ -67,16 +68,30 @@ func (h *BaseHandler) GetUserIDFromCookie(r *http.Request) (int64, error) {
 }
 
 func (h *BaseHandler) SetUserCookie(w http.ResponseWriter, userID int64) {
+	encryptionUtil := utils.NewEncryptionUtil()
+	
+	userIDStr := strconv.FormatInt(userID, 10)
+	h.logger.Infof("Encrypting user ID: %s", userIDStr)
+	
+	encryptedUserID, err := encryptionUtil.Encrypt(userIDStr)
+	if err != nil {
+		h.logger.Errorf("Error encrypting user ID: %v", err)
+		encryptedUserID = userIDStr
+	}
+	
+	h.logger.Infof("Encrypted user ID: %s", encryptedUserID)
+	
 	cookie := &http.Cookie{
 		Name:     "user_id",
-		Value:    strconv.FormatInt(userID, 10),
+		Value:    encryptedUserID,
 		Path:     "/",
 		MaxAge:   86400 * 30,
 		HttpOnly: true,
-		Secure:   true,     
+		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	}
 	http.SetCookie(w, cookie)
+	h.logger.Infof("Set encrypted cookie for user ID: %d", userID)
 }
 
 func (h *BaseHandler) DecodeJSONBody(r *http.Request, target interface{}) error {

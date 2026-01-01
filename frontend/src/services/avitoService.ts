@@ -1,5 +1,3 @@
-import apiService from './apiService'
-
 class AvitoService {
 	private baseUrl: string
 

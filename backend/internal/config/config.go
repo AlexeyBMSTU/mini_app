@@ -17,6 +17,7 @@ type Config struct {
 	PostgresPort      string
 	AvitoClientId     string
 	AvitoClientSecret string
+	CookieEncryptionKey string
 }
 
 func Load() *Config {
@@ -34,6 +35,7 @@ func Load() *Config {
 		PostgresPort:      getEnv("POSTGRES_PORT", "5432"),
 		AvitoClientId:     getEnv("AVITO_CLIENT_ID", ""),
 		AvitoClientSecret: getEnv("AVITO_CLIENT_SECRET", ""),
+		CookieEncryptionKey: getEnv("COOKIE_ENCRYPTION_KEY", ""),
 	}
 }
 

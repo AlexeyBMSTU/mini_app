@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"mini-app-backend/internal/logger"
+	"mini-app-backend/internal/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -53,10 +54,8 @@ func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		
-		if origin != "" {
+		if origin == "http://localhost:3030" || origin == "https://7wt1l5rz-3030.euw.devtunnels.ms" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
-		} else {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 		
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -102,6 +101,19 @@ func UserCookie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("user_id")
 		if err == nil {
+			encryptionUtil := utils.NewEncryptionUtil()
+			
+			decryptedValue, err := encryptionUtil.Decrypt(cookie.Value)
+			if err == nil {
+				userID, err := strconv.ParseInt(decryptedValue, 10, 64)
+				if err == nil {
+					ctx := context.WithValue(r.Context(), "user_id", userID)
+					r = r.WithContext(ctx)
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+			
 			userID, err := strconv.ParseInt(cookie.Value, 10, 64)
 			if err == nil {
 				ctx := context.WithValue(r.Context(), "user_id", userID)

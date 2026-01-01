@@ -87,17 +87,27 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	var user *user.User
 	if existingUser != nil {
-		h.LogError(r, nil, "User already exists")
-		h.SendError(w, r, errors.NewAppError(http.StatusBadRequest, "User already exists"), http.StatusBadRequest)
-		return
-	}
-	
-	createdUser, err := h.userService.CreateOrUpdateUser(req.User)
-	if err != nil {
-		h.LogError(r, err, "Error creating user")
-		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating user", err.Error()), http.StatusInternalServerError)
-		return
+		user = existingUser
+		h.LogInfo(r, "User already exists, logging in")
+	} else {
+		user, err = h.userService.CreateOrUpdateUser(req.User)
+		if err != nil {
+			h.LogError(r, err, "Error creating user")
+			h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Error creating user", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		_, err = h.messageService.CreateMessage(
+			h.config.AvitoClientId,
+			h.config.AvitoClientSecret,
+			"Ваше сообщение по умолчанию",
+			"Автоответчик",
+		)
+		if err != nil {
+			h.LogError(r, err, "Error creating default message")
+		}
 	}
 
 	_, err = h.messageService.CreateMessage(
@@ -110,13 +120,13 @@ func (h *AuthHandler) TelegramAuth(w http.ResponseWriter, r *http.Request) {
 		h.LogError(r, err, "Error creating default message")
 	}
 
-	token := "token_" + strconv.FormatInt(createdUser.ID, 10)
+	token := "token_" + strconv.FormatInt(user.ID, 10)
 
-	h.SetUserCookie(w, createdUser.ID)
+	h.SetUserCookie(w, user.ID)
 
 	response := TelegramAuthResponse{
 		Success: true,
-		User:    createdUser,
+		User:    user,
 		Token:   token,
 	}
 

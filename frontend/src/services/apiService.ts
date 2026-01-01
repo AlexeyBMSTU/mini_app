@@ -34,7 +34,7 @@ class ApiService {
 	}
 
 	async authenticateUser(userData: TelegramUser, initData: string) {
-		return this.request('/api/auth/telegram', {
+		return this.request('/api/auth/telegram/', {
 			method: 'POST',
 			body: JSON.stringify({
 				user: userData,
@@ -44,11 +44,11 @@ class ApiService {
 	}
 
 	async getCurrentUser() {
-		return this.request('/api/user/me')
+		return this.request('/api/user/me/')
 	}
 
 	async updateUser(userData: Partial<TelegramUser>) {
-		return this.request('/api/user/me', {
+		return this.request('/api/user/me/', {
 			method: 'PUT',
 			body: JSON.stringify(userData),
 		})
