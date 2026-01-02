@@ -12,10 +12,12 @@ import { PurePage } from '@/components/PurePage/PurePage'
 
 export const HomePage = observer(() => {
   const [disabled, setDisabled] = useState(true)
+  const [navigating, setNavigating] = useState(false)
   const { route } = useStore()
 
   const handleContinue = () => {
-    route.navigate('/chats')
+    setNavigating(true);
+    route.navigate('/chats');
   }
 
   return (
@@ -25,18 +27,24 @@ export const HomePage = observer(() => {
           <TypingEffect isBold text='SERVATORY' />
         </div>
         <div style={{ color: '#1976d2', fontSize: 24 }} className={styles.welcomeText}>
-          <TypingEffect text='Управляй своими чатами в&nbsp;Авито' />
+          <TypingEffect text='Будь ближе к&nbsp;недвижимости' />
         </div>
         <FormGroup className={styles.welcomeButton}>
-          <Button size='large' disabled={disabled} variant='outlined' onClick={handleContinue}>
+          <Button
+            size='large'
+            disabled={disabled || navigating}
+            variant='outlined'
+            onClick={handleContinue}
+          >
             Продолжить
-            <ArrowForwardRounded color={disabled ? 'disabled' : 'primary'} fontSize='large' />
+            <ArrowForwardRounded color={disabled || navigating ? 'disabled' : 'primary'} fontSize='large' />
           </Button>
           <FormControlLabel
             control={
               <Checkbox
                 style={{ color: '#1976d2' }}
                 onClick={() => setDisabled(disabled => !disabled)}
+                disabled={navigating}
               />
             }
             label={<span style={{ color: '#1976d2' }}>Согласие на обработку перс. данных</span>}

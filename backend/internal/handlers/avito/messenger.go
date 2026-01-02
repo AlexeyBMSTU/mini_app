@@ -1,17 +1,50 @@
 package avito
 
 import (
+	"encoding/json"
 	"fmt"
 	"mini-app-backend/internal/errors"
 	"mini-app-backend/utils"
 	"net/http"
 )
 
+func (h *AvitoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	h.LogRequest(r, "GetUserInfo request")
+	if avitoHandler == nil {
+		avitoHandler = NewAvitoHandler()
+	}
+	user_id, err := utils.GetUserInfoAvito(r.Context())
+	if err != nil {
+		h.LogError(r, err, "Failed to get user info")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Failed to get user info", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	
+	jsonData, err := json.Marshal(user_id)
+	if err != nil {
+		h.LogError(r, err, "Failed to marshal user info")
+		h.SendError(w, r, errors.NewAppErrorWithDetails(http.StatusInternalServerError, "Failed to marshal user info", err.Error()), http.StatusInternalServerError)
+		return
+	}
+	
+	w.Write(jsonData)
+}
+
 func GetMesseges(w http.ResponseWriter, r *http.Request) {
 	if avitoHandler == nil {
 		avitoHandler = NewAvitoHandler()
 	}
 	avitoHandler.GetMesseges(w, r)
+}
+
+func GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	if avitoHandler == nil {
+		avitoHandler = NewAvitoHandler()
+	}
+	avitoHandler.GetUserInfo(w, r)
 }
 
 func SendMessege(w http.ResponseWriter, r *http.Request) {

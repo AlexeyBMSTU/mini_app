@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -74,9 +74,6 @@ services:
     networks:
       - mini-app-network
     restart: unless-stopped
-    volumes:
-      - ./backend:/app
-      - ./backend/tmp:/app/tmp
 
 volumes:
   postgres_data:

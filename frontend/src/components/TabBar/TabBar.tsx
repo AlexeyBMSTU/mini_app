@@ -9,18 +9,18 @@ import styles from './TabBar.module.css'
 
 const TAB_ROUTES = ['/chats', '/settings'] as const
 
-export const TabBar = observer(({ showTab = true }: { showTab?: boolean }) => {
+export const TabBar = observer(() => {
   const { route } = useStore()
-
-  if (!showTab) {
-    return null
-  }
 
   const activeTab = useMemo(() => {
     const currentPath = route.currentPath
     const index = TAB_ROUTES.indexOf(currentPath as (typeof TAB_ROUTES)[number])
     return index !== -1 ? index : 0
   }, [route.currentPath])
+
+  if (route.currentPath === '/') {
+    return null
+  }
 
   const handleRoute = (_event: SyntheticEvent, newValue: number) => {
     const routePath = TAB_ROUTES[newValue]

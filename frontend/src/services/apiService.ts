@@ -70,6 +70,14 @@ class ApiService {
       method: 'POST',
     })
   }
+
+  async getChats() {
+    return this.request('/api/avito/messenger/chats/')
+  }
+
+  async getUserInfo() {
+    return this.request('/api/avito/user/info/')
+  }
 }
 
 export default new ApiService()

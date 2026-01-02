@@ -52,6 +52,15 @@ COPY --from=builder /go/bin/air /go/bin/air
 # Создаем директорию для приложения
 WORKDIR /app
 
+# Копируем go mod файлы
+COPY --from=builder /app/go.mod /app/go.sum ./
+
+# Копируем исходный код
+COPY --from=builder /app ./
+
+# Создаем директорию для временных файлов Air
+RUN mkdir -p ./tmp
+
 # Копируем конфигурацию Air для бота
 COPY --from=builder /app/.air.bot.toml ./.air.toml
 

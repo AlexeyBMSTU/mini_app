@@ -99,6 +99,7 @@ func (s *Server) setupRoutes(mux *http.ServeMux) {
 	
 	mux.HandleFunc("GET /api/avito/items/", avito.GetItems)
 	mux.HandleFunc("GET /api/avito/messenger/chats/", avito.GetMesseges)
+	mux.HandleFunc("/api/avito/user/info/", avito.GetUserInfo)
 }
 
 func (s *Server) Start() error {
