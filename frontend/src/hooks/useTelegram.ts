@@ -18,11 +18,10 @@ export const useTelegram = () => {
           if (userData) {
             setUser(userData)
           }
-          console.log('Запущено в Telegram')
         } else {
           setIsTelegram(false)
-          console.log('Запущено в браузере. Используется режим разработки.')
-          setUser(telegramService.getMockUser())
+          const mockUser = telegramService.getMockUser()
+          setUser(mockUser)
         }
       } catch (error) {
         console.error('Ошибка инициализации:', error)
@@ -44,7 +43,7 @@ export const useTelegram = () => {
   }
 
   return {
-    user,
+    user,          
     loading,
     isTelegram,
     showAlert,

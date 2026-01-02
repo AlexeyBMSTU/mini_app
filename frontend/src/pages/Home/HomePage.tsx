@@ -5,21 +5,28 @@ import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
 import { observer } from 'mobx-react-lite'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '@/store'
 import styles from '@/pages/Home/HomePage.module.css'
 import { PurePage } from '@/components/PurePage/PurePage'
+import { useTelegram } from '@/hooks/useTelegram'
 
 export const HomePage = observer(() => {
   const [disabled, setDisabled] = useState(true)
   const [navigating, setNavigating] = useState(false)
   const { route } = useStore()
-
+  const { user } = useTelegram()
+  
   const handleContinue = () => {
     setNavigating(true);
     route.navigate('/chats');
   }
-
+  useEffect(() => {
+    if (user) {
+      console.log('User ID из хука:', user.id)
+    }
+  }, [user])
+  
   return (
     <PurePage>
       <section className={styles.welcomeSection}>
