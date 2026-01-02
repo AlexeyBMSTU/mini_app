@@ -1,0 +1,13 @@
+.root {
+  gap: 20px;
+  align-items: center;
+}
+
+.label {
+  margin-bottom: 10px;
+  font-family: 'Evolventa', sans-serif !important;
+}
+
+.input > * {
+  font-family: 'Evolventa', sans-serif !important;
+}

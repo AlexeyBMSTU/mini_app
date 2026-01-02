@@ -1,0 +1,48 @@
+import { TypingEffect } from '@/utils/TypingEffect'
+import { ArrowForwardRounded } from '@mui/icons-material'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormGroup from '@mui/material/FormGroup'
+import { observer } from 'mobx-react-lite'
+import { useState } from 'react'
+import { useStore } from '@/store'
+import styles from '@/pages/Home/HomePage.module.css'
+import { PurePage } from '@/components/PurePage/PurePage'
+
+export const HomePage = observer(() => {
+  const [disabled, setDisabled] = useState(true)
+  const { route } = useStore()
+
+  const handleContinue = () => {
+    route.navigate('/chats')
+  }
+
+  return (
+    <PurePage>
+      <section className={styles.welcomeSection}>
+        <div style={{ color: '#1976d2' }} className={styles.welcomeText}>
+          <TypingEffect isBold text='SERVATORY' />
+        </div>
+        <div style={{ color: '#1976d2', fontSize: 24 }} className={styles.welcomeText}>
+          <TypingEffect text='Управляй своими чатами в&nbsp;Авито' />
+        </div>
+        <FormGroup className={styles.welcomeButton}>
+          <Button size='large' disabled={disabled} variant='outlined' onClick={handleContinue}>
+            Продолжить
+            <ArrowForwardRounded color={disabled ? 'disabled' : 'primary'} fontSize='large' />
+          </Button>
+          <FormControlLabel
+            control={
+              <Checkbox
+                style={{ color: '#1976d2' }}
+                onClick={() => setDisabled(disabled => !disabled)}
+              />
+            }
+            label={<span style={{ color: '#1976d2' }}>Согласие на обработку перс. данных</span>}
+          />
+        </FormGroup>
+      </section>
+    </PurePage>
+  )
+})

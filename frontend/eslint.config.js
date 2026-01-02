@@ -1,7 +1,7 @@
-import eslint from '@eslint/js';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
-import importPlugin from 'eslint-plugin-import';
+import eslint from '@eslint/js'
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsparser from '@typescript-eslint/parser'
+import importPlugin from 'eslint-plugin-import'
 
 export default [
   eslint.configs.recommended,
@@ -29,30 +29,33 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint,
-      'import': importPlugin,
+      import: importPlugin,
     },
     rules: {
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', {
-        'vars': 'all',
-        'args': 'after-used',
-        'ignoreRestSiblings': false
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          args: 'after-used',
+          ignoreRestSiblings: false,
+        },
+      ],
       'import/no-unused-modules': 'off',
-      'import/no-extraneous-dependencies': ['error', {'devDependencies': true}]
+      'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     },
     settings: {
       'import/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx']
+        '@typescript-eslint/parser': ['.ts', '.tsx'],
       },
       'import/resolver': {
-        'node': {
-          'extensions': ['.js', '.jsx', '.ts', '.tsx'],
-          'paths': {
-            '@': ['./src']
-          }
-        }
-      }
-    }
-  }
-];
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+          paths: {
+            '@': ['./src'],
+          },
+        },
+      },
+    },
+  },
+]
