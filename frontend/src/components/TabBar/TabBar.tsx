@@ -7,7 +7,7 @@ import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import styles from './TabBar.module.css'
 
-const TAB_ROUTES = ['/chats', '/settings'] as const
+const TAB_ROUTES = ['/browse', '/settings'] as const
 
 export const TabBar = observer(() => {
   const { route } = useStore()

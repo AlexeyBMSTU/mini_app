@@ -1,0 +1,37 @@
+.filtersContainer {
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filtersTitle {
+  margin-bottom: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.filtersRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.filterControl {
+  flex: 1;
+}
+
+.filtersActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.clearButton {
+  color: #666;
+  border-color: #ccc;
+}
+
+.clearButton:hover {
+  border-color: #999;
+}

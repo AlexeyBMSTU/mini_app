@@ -1,3 +1,7 @@
+import { PurePage } from '@/components/PurePage/PurePage'
+import { useTelegram } from '@/hooks/useTelegram'
+import styles from '@/pages/Home/HomePage.module.css'
+import { useStore } from '@/store'
 import { TypingEffect } from '@/utils/TypingEffect'
 import { ArrowForwardRounded } from '@mui/icons-material'
 import Button from '@mui/material/Button'
@@ -6,10 +10,6 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
 import { observer } from 'mobx-react-lite'
 import { useEffect, useState } from 'react'
-import { useStore } from '@/store'
-import styles from '@/pages/Home/HomePage.module.css'
-import { PurePage } from '@/components/PurePage/PurePage'
-import { useTelegram } from '@/hooks/useTelegram'
 
 export const HomePage = observer(() => {
   const [disabled, setDisabled] = useState(true)
@@ -44,7 +44,10 @@ export const HomePage = observer(() => {
             onClick={handleContinue}
           >
             Продолжить
-            <ArrowForwardRounded color={disabled || navigating ? 'disabled' : 'primary'} fontSize='large' />
+            <ArrowForwardRounded
+              color={disabled || navigating ? 'disabled' : 'primary'}
+              fontSize='large'
+            />
           </Button>
           <FormControlLabel
             control={

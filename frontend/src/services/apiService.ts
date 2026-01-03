@@ -1,3 +1,4 @@
+import { DealType, PropertyType } from '../types/property'
 import { TelegramUser } from '../types/telegram'
 
 class ApiService {
@@ -77,6 +78,35 @@ class ApiService {
 
   async getUserInfo() {
     return this.request('/api/avito/user/info/')
+  }
+
+  async getProperties(filters?: {
+    propertyType?: PropertyType
+    dealType?: DealType
+    minPrice?: number
+    maxPrice?: number
+    minArea?: number
+    maxArea?: number
+    rooms?: number
+  }) {
+    const params = new window.URLSearchParams()
+
+    if (filters) {
+      if (filters.propertyType) params.append('type', filters.propertyType)
+      if (filters.dealType) params.append('dealType', filters.dealType)
+      if (filters.minPrice) params.append('minPrice', filters.minPrice.toString())
+      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString())
+      if (filters.minArea) params.append('minArea', filters.minArea.toString())
+      if (filters.maxArea) params.append('maxArea', filters.maxArea.toString())
+      if (filters.rooms) params.append('rooms', filters.rooms.toString())
+    }
+
+    const queryString = params.toString()
+    return this.request(`/api/properties${queryString ? `?${queryString}` : ''}`)
+  }
+
+  async getPropertyById(id: string) {
+    return this.request(`/api/properties/${id}`)
   }
 }
 
