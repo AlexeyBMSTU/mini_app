@@ -71,7 +71,8 @@ class RouteStore {
           telegramService.showAlert('Вы на главной странице')
         }
       }
-      
+      console.log('alo')
+      console.log(this.routeState)
       if (this.routeState.previousPath !== null) {
         telegramService.showBackButton(this.backButtonCallback)
       } else {

@@ -5,6 +5,7 @@ import { Route, Routes } from 'react-router-dom'
 import { TabBar } from '../TabBar/TabBar'
 import { ErrorPage } from '@/pages/Error/ErrorPage'
 import { postEvent } from '@telegram-apps/sdk'
+import { NavBar } from '../NavBar/NavBar'
 
 const HomePage = React.lazy(() =>
   import('@/pages/Home/HomePage').then(module => ({ default: module.HomePage }))
@@ -25,6 +26,7 @@ export const AppRoutes = observer(() => {
 
   return (
     <React.Suspense fallback={<Loader />}>
+      <NavBar />
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/browse' element={<BrowsePage />} />

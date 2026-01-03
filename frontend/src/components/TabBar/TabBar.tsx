@@ -2,9 +2,11 @@ import { SyntheticEvent, useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '@/store'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
-import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import styles from './TabBar.module.css'
 
 const TAB_ROUTES = ['/browse', '/settings'] as const
@@ -38,9 +40,16 @@ export const TabBar = observer(() => {
         value={activeTab}
         onChange={handleRoute}
         aria-label='Navigation tabs'
+        sx={{paddingBottom: '3px'}}
+        slotProps={{
+          indicator: {
+            style: { display: 'none' }
+          }
+        }}
       >
-        <Tab icon={<FormatListBulletedRoundedIcon color='primary' />} aria-label='Chats' />
-        <Tab icon={<AccountCircleRoundedIcon color='primary' />} aria-label='Settings' />
+        <Tab icon={activeTab === 0 ? <HomeRoundedIcon  fontSize='large'  color='primary' /> : <HomeOutlinedIcon fontSize='large' 
+        color='primary' />} aria-label='Houmes' />
+        <Tab icon={activeTab === 1 ? <AccountCircleRoundedIcon fontSize='large' color='primary' /> : <AccountCircleOutlinedIcon fontSize='large' color='primary' />} aria-label='Profile' />
       </Tabs>
     </div>
   )
