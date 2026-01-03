@@ -4,6 +4,8 @@ class TelegramService {
   private webApp: TelegramWebApp | null = null
   private user: TelegramUser | undefined = undefined
   public isAvailable: boolean = false
+  private backButtonCallback: (() => void) | null = null
+  private mainButtonCallback: (() => void) | null = null
 
   init(): boolean {
     try {
@@ -62,6 +64,62 @@ class TelegramService {
       username: 'developer',
       language_code: 'ru',
       is_premium: true,
+    }
+  }
+
+  showBackButton(callback?: () => void): void {
+    if (this.webApp && this.isAvailable) {
+      if (callback) {
+        this.backButtonCallback = callback
+        this.webApp.BackButton.onClick(callback)
+      }
+      this.webApp.BackButton.show()
+    }
+  }
+
+  hideBackButton(): void {
+    if (this.webApp && this.isAvailable) {
+      if (this.backButtonCallback) {
+        this.webApp.BackButton.offClick(this.backButtonCallback)
+        this.backButtonCallback = null
+      }
+      this.webApp.BackButton.hide()
+    }
+  }
+
+  disableMainButton(): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.MainButton.disable()
+    }
+  }
+
+  triggerHapticFeedback(type: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.HapticFeedback.impactOccurred(type)
+    }
+  }
+
+  triggerNotificationFeedback(type: 'error' | 'success' | 'warning'): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.HapticFeedback.notificationOccurred(type)
+    }
+  }
+
+  triggerSelectionFeedback(): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.HapticFeedback.selectionChanged()
+    }
+  }
+
+  openLink(url: string, tryInstantView?: boolean): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.openLink(url, { try_instant_view: tryInstantView || false })
+    }
+  }
+
+  openTelegramLink(url: string): void {
+    if (this.webApp && this.isAvailable) {
+      this.webApp.openTelegramLink(url)
     }
   }
 }

@@ -23,6 +23,7 @@
     "@mui/material": "^7.3.6",
     "@telegram-apps/sdk": "^3.11.8",
     "@telegram-apps/sdk-react": "^3.3.9",
+    "@tma.js/sdk": "^3.1.4",
     "antd": "^6.0.1",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",

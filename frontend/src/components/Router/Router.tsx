@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '../../store'
 
@@ -10,6 +10,7 @@ interface RouterProps {
 const RouterObserver: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const navigationType = useNavigationType()
   const { route } = useStore()
 
   useEffect(() => {
@@ -17,21 +18,36 @@ const RouterObserver: React.FC = () => {
   }, [route, navigate])
 
   useEffect(() => {
-    if (route.currentPath !== location.pathname) {
-      route.navigate(location.pathname)
+    if (navigationType !== 'POP') {
+      const previousPath = route.currentPath
+      
+      route.routeState.currentPath = location.pathname
+      
+      if (previousPath !== location.pathname) {
+        route.routeState.previousPath = previousPath
+        
+        const lastHistoryPath = route.routeState.navigationHistory[route.routeState.navigationHistory.length - 1]
+        if (lastHistoryPath !== location.pathname) {
+          route.routeState.navigationHistory.push(location.pathname)
+        }
+      }
+      
+      route.updateTelegramBackButton()
+    } else {
+      route.routeState.currentPath = location.pathname
+      
+      if (route.routeState.navigationHistory.length > 1) {
+        route.routeState.navigationHistory.pop()
+        
+        const newHistoryLength = route.routeState.navigationHistory.length
+        route.routeState.previousPath = newHistoryLength > 1 
+          ? route.routeState.navigationHistory[newHistoryLength - 2] 
+          : null
+      }
+      
+      route.updateTelegramBackButton()
     }
-  }, [location.pathname, route])
-
-  useEffect(() => {
-    const handlePopState = () => {
-      route.goBack()
-    }
-
-    window.addEventListener('popstate', handlePopState)
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-    }
-  }, [route])
+  }, [location, navigationType, route])
 
   return null
 }

@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 import { NavigateFunction } from 'react-router-dom'
+import telegramService from '../services/telegramService'
 
 export interface RouteState {
   currentPath: string
@@ -15,6 +16,7 @@ class RouteStore {
   }
 
   private navigateFn: NavigateFunction | null = null
+  private backButtonCallback: (() => void) | null = null
 
   constructor() {
     makeAutoObservable(this)
@@ -32,24 +34,11 @@ class RouteStore {
       return
     }
 
-    this.routeState.previousPath = this.routeState.currentPath
-    this.routeState.currentPath = path
-
-    if (!this.routeState.navigationHistory.includes(path)) {
-      this.routeState.navigationHistory.push(path)
-    }
-
     this.navigateFn(path)
   }
 
   goBack() {
-    if (this.routeState.navigationHistory.length > 1 && this.navigateFn) {
-      this.routeState.navigationHistory.pop()
-      const previousPath =
-        this.routeState.navigationHistory[this.routeState.navigationHistory.length - 1]
-      this.routeState.previousPath = this.routeState.currentPath
-      this.routeState.currentPath = previousPath
-
+    if (this.canGoBack && this.navigateFn) {
       this.navigateFn(-1)
     }
   }
@@ -63,6 +52,31 @@ class RouteStore {
 
     if (this.navigateFn) {
       this.navigateFn('/')
+    }
+    
+    this.updateTelegramBackButton()
+  }
+
+  updateTelegramBackButton() {
+    if (telegramService.isTelegram()) {
+      if (this.backButtonCallback) {
+        telegramService.hideBackButton()
+      }
+
+      this.backButtonCallback = () => {
+        if (this.canGoBack) {
+          this.goBack()
+          telegramService.triggerHapticFeedback('light')
+        } else {
+          telegramService.showAlert('Вы на главной странице')
+        }
+      }
+      
+      if (this.routeState.previousPath !== null) {
+        telegramService.showBackButton(this.backButtonCallback)
+      } else {
+        telegramService.hideBackButton()
+      }
     }
   }
 

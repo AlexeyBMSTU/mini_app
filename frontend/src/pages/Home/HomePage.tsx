@@ -19,7 +19,7 @@ export const HomePage = observer(() => {
   
   const handleContinue = () => {
     setNavigating(true);
-    route.navigate('/chats');
+    route.navigate('/browse');
   }
   useEffect(() => {
     if (user) {
@@ -29,6 +29,7 @@ export const HomePage = observer(() => {
   
   return (
     <PurePage>
+      <div style={{height: '100vh'}}>
       <section className={styles.welcomeSection}>
         <div style={{ color: '#1976d2' }} className={styles.welcomeText}>
           <TypingEffect isBold text='SERVATORY' />
@@ -42,6 +43,7 @@ export const HomePage = observer(() => {
             disabled={disabled || navigating}
             variant='outlined'
             onClick={handleContinue}
+            sx={{width: '100%'}}
           >
             Продолжить
             <ArrowForwardRounded
@@ -61,6 +63,7 @@ export const HomePage = observer(() => {
           />
         </FormGroup>
       </section>
+      </div>
     </PurePage>
   )
 })

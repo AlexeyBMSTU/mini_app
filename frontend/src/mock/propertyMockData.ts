@@ -44,7 +44,7 @@ export const mockProperties: Property[] = [
     images: [
       {
         id: 'img1',
-        url: '/Users/a.naryzhnyy/Desktop/mini-app/mini_app/frontend/src/mock/home.jpg',
+        url: 'https://github.com/AlexeyBMSTU/mini_app/blob/main/frontend/src/mock/home.jpg?raw=true',
         sizes: {
           '140x105': 'https://via.placeholder.com/140x105?text=Квартира+1',
           '640x480': 'https://via.placeholder.com/640x480?text=Квартира+1',
@@ -120,7 +120,7 @@ export const mockProperties: Property[] = [
     images: [
       {
         id: 'img3',
-        url: 'https://via.placeholder.com/640x480?text=Студия+1',
+        url: 'https://github.com/AlexeyBMSTU/mini_app/blob/main/frontend/src/mock/home.jpg?raw=true',
         sizes: {
           '140x105': 'https://via.placeholder.com/140x105?text=Студия+1',
           '640x480': 'https://via.placeholder.com/640x480?text=Студия+1',
@@ -185,7 +185,7 @@ export const mockProperties: Property[] = [
     images: [
       {
         id: 'img4',
-        url: 'https://via.placeholder.com/640x480?text=Дом+1',
+        url: 'https://github.com/AlexeyBMSTU/mini_app/blob/main/frontend/src/mock/home.jpg?raw=true',
         sizes: {
           '140x105': 'https://via.placeholder.com/140x105?text=Дом+1',
           '640x480': 'https://via.placeholder.com/640x480?text=Дом+1',
@@ -262,7 +262,7 @@ export const mockProperties: Property[] = [
     images: [
       {
         id: 'img6',
-        url: 'https://via.placeholder.com/640x480?text=Новостройка+1',
+        url: 'https://github.com/AlexeyBMSTU/mini_app/blob/main/frontend/src/mock/home.jpg?raw=true',
         sizes: {
           '140x105': 'https://via.placeholder.com/140x105?text=Новостройка+1',
           '640x480': 'https://via.placeholder.com/640x480?text=Новостройка+1',
@@ -327,7 +327,7 @@ export const mockProperties: Property[] = [
     images: [
       {
         id: 'img7',
-        url: 'https://via.placeholder.com/640x480?text=Аренда+дома+1',
+        url: 'https://github.com/AlexeyBMSTU/mini_app/blob/main/frontend/src/mock/home.jpg?raw=true',
         sizes: {
           '140x105': 'https://via.placeholder.com/140x105?text=Аренда+дома+1',
           '640x480': 'https://via.placeholder.com/640x480?text=Аренда+дома+1',

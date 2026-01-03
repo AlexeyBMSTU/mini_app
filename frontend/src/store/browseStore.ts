@@ -19,7 +19,6 @@ class BrowseStore {
     },
   }
 
-  // Флаг для использования моковых данных
   useMockData: boolean = true
 
   constructor() {
@@ -34,7 +33,6 @@ class BrowseStore {
       })
 
       if (this.useMockData) {
-        // Имитация задержки загрузки
         await new Promise(resolve => window.setTimeout(resolve, 1000))
         
         runInAction(() => {
@@ -65,7 +63,6 @@ class BrowseStore {
       })
 
       if (this.useMockData) {
-        // Имитация задержки загрузки
         await new Promise(resolve => window.setTimeout(resolve, 500))
         
         const property = mockProperties.find(p => p.id === id)
@@ -74,7 +71,6 @@ class BrowseStore {
         }
 
         runInAction(() => {
-          // Если свойство уже есть в списке, обновляем его
           const existingIndex = this.propertyState.properties.findIndex(p => p.id === id)
           if (existingIndex !== -1) {
             this.propertyState.properties[existingIndex] = property
@@ -89,7 +85,6 @@ class BrowseStore {
         const response = await apiService.getPropertyById(id)
 
         runInAction(() => {
-          // Если свойство уже есть в списке, обновляем его
           const existingIndex = this.propertyState.properties.findIndex(p => p.id === id)
           if (existingIndex !== -1) {
             this.propertyState.properties[existingIndex] = response
