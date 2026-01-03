@@ -30,14 +30,18 @@ export const TabBar = observer(() => {
   }
 
   return (
-    <Tabs
-      value={activeTab}
-      onChange={handleRoute}
+    <div
       className={styles.tabBar}
-      aria-label='Navigation tabs'
+      style={{backgroundColor: 'white'}}
     >
-      <Tab icon={<FormatListBulletedRoundedIcon color='primary' />} aria-label='Chats' />
-      <Tab icon={<AccountCircleRoundedIcon color='primary' />} aria-label='Settings' />
-    </Tabs>
+      <Tabs
+        value={activeTab}
+        onChange={handleRoute}
+        aria-label='Navigation tabs'
+      >
+        <Tab icon={<FormatListBulletedRoundedIcon color='primary' />} aria-label='Chats' />
+        <Tab icon={<AccountCircleRoundedIcon color='primary' />} aria-label='Settings' />
+      </Tabs>
+    </div>
   )
 })
