@@ -20,31 +20,31 @@ const RouterObserver: React.FC = () => {
   useEffect(() => {
     if (navigationType !== 'POP') {
       const previousPath = route.currentPath
-      
+
       route.routeState.currentPath = location.pathname
-      
+
       if (previousPath !== location.pathname) {
         route.routeState.previousPath = previousPath
-        
-        const lastHistoryPath = route.routeState.navigationHistory[route.routeState.navigationHistory.length - 1]
+
+        const lastHistoryPath =
+          route.routeState.navigationHistory[route.routeState.navigationHistory.length - 1]
         if (lastHistoryPath !== location.pathname) {
           route.routeState.navigationHistory.push(location.pathname)
         }
       }
-      
+
       route.updateTelegramBackButton()
     } else {
       route.routeState.currentPath = location.pathname
-      
+
       if (route.routeState.navigationHistory.length > 1) {
         route.routeState.navigationHistory.pop()
-        
+
         const newHistoryLength = route.routeState.navigationHistory.length
-        route.routeState.previousPath = newHistoryLength > 1 
-          ? route.routeState.navigationHistory[newHistoryLength - 2] 
-          : null
+        route.routeState.previousPath =
+          newHistoryLength > 1 ? route.routeState.navigationHistory[newHistoryLength - 2] : null
       }
-      
+
       route.updateTelegramBackButton()
     }
   }, [location, navigationType, route])

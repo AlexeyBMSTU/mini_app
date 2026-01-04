@@ -34,7 +34,7 @@ class BrowseStore {
 
       if (this.useMockData) {
         await new Promise(resolve => window.setTimeout(resolve, 1000))
-        
+
         runInAction(() => {
           this.propertyState.properties = mockProperties
           this.propertyState.loading = false
@@ -49,7 +49,8 @@ class BrowseStore {
       }
     } catch (error) {
       runInAction(() => {
-        this.propertyState.error = error instanceof Error ? error.message : 'Failed to fetch properties'
+        this.propertyState.error =
+          error instanceof Error ? error.message : 'Failed to fetch properties'
         this.propertyState.loading = false
       })
     }
@@ -64,7 +65,7 @@ class BrowseStore {
 
       if (this.useMockData) {
         await new Promise(resolve => window.setTimeout(resolve, 500))
-        
+
         const property = mockProperties.find(p => p.id === id)
         if (!property) {
           throw new Error('Property not found')
@@ -98,7 +99,8 @@ class BrowseStore {
       }
     } catch (error) {
       runInAction(() => {
-        this.propertyState.error = error instanceof Error ? error.message : 'Failed to fetch property'
+        this.propertyState.error =
+          error instanceof Error ? error.message : 'Failed to fetch property'
         this.propertyState.loading = false
       })
       throw error
@@ -107,7 +109,7 @@ class BrowseStore {
 
   setFilter<K extends keyof typeof this.propertyState.filters>(
     key: K,
-    value: typeof this.propertyState.filters[K]
+    value: (typeof this.propertyState.filters)[K]
   ) {
     runInAction(() => {
       this.propertyState.filters[key] = value
@@ -168,7 +170,7 @@ class BrowseStore {
 
   get filteredProperties() {
     const { properties, filters } = this.propertyState
-    
+
     return properties.filter(property => {
       if (filters.propertyType && property.type !== filters.propertyType) return false
       if (filters.dealType && property.dealType !== filters.dealType) return false
@@ -177,7 +179,7 @@ class BrowseStore {
       if (filters.minArea && property.area < filters.minArea) return false
       if (filters.maxArea && property.area > filters.maxArea) return false
       if (filters.rooms && property.rooms !== filters.rooms) return false
-      
+
       return true
     })
   }

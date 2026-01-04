@@ -3,7 +3,9 @@
   max-width: 350px;
   margin-bottom: 20px;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   border-radius: 12px;
   overflow: hidden;
 }

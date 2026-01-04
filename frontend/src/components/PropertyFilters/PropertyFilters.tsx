@@ -1,6 +1,16 @@
 import React from 'react'
 import { PropertyType, DealType } from '@/types/property'
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '@/store'
 import styles from './PropertyFilters.module.css'
@@ -47,34 +57,34 @@ export const PropertyFilters = observer(() => {
 
   return (
     <Box className={styles.filtersContainer}>
-      <Typography variant="h6" className={styles.filtersTitle}>
+      <Typography variant='h6' className={styles.filtersTitle}>
         Фильтры
       </Typography>
-      
+
       <Box className={styles.filtersRow}>
-        <FormControl className={styles.filterControl} size="small">
-          <InputLabel id="property-type-label">Тип недвижимости</InputLabel>
+        <FormControl className={styles.filterControl} size='small'>
+          <InputLabel id='property-type-label'>Тип недвижимости</InputLabel>
           <Select
-            labelId="property-type-label"
+            labelId='property-type-label'
             value={browse.filters.propertyType || ''}
             onChange={handlePropertyTypeChange}
-            label="Тип недвижимости"
+            label='Тип недвижимости'
           >
-            <MenuItem value="">Все типы</MenuItem>
+            <MenuItem value=''>Все типы</MenuItem>
             <MenuItem value={PropertyType.APARTMENT}>Квартира</MenuItem>
             <MenuItem value={PropertyType.HOUSE}>Дом</MenuItem>
           </Select>
         </FormControl>
 
-        <FormControl className={styles.filterControl} size="small">
-          <InputLabel id="deal-type-label">Тип сделки</InputLabel>
+        <FormControl className={styles.filterControl} size='small'>
+          <InputLabel id='deal-type-label'>Тип сделки</InputLabel>
           <Select
-            labelId="deal-type-label"
+            labelId='deal-type-label'
             value={browse.filters.dealType || ''}
             onChange={handleDealTypeChange}
-            label="Тип сделки"
+            label='Тип сделки'
           >
-            <MenuItem value="">Все типы</MenuItem>
+            <MenuItem value=''>Все типы</MenuItem>
             <MenuItem value={DealType.SALE}>Продажа</MenuItem>
             <MenuItem value={DealType.RENT}>Аренда</MenuItem>
           </Select>
@@ -84,32 +94,32 @@ export const PropertyFilters = observer(() => {
       <Box className={styles.filtersRow}>
         <TextField
           className={styles.filterControl}
-          label="Мин. цена"
-          type="number"
-          size="small"
+          label='Мин. цена'
+          type='number'
+          size='small'
           value={browse.filters.minPrice || ''}
           onChange={handleMinPriceChange}
         />
         <TextField
           className={styles.filterControl}
-          label="Макс. цена"
-          type="number"
-          size="small"
+          label='Макс. цена'
+          type='number'
+          size='small'
           value={browse.filters.maxPrice || ''}
           onChange={handleMaxPriceChange}
         />
       </Box>
 
       <Box className={styles.filtersRow}>
-        <FormControl className={styles.filterControl} size="small">
-          <InputLabel id="rooms-label">Комнаты</InputLabel>
+        <FormControl className={styles.filterControl} size='small'>
+          <InputLabel id='rooms-label'>Комнаты</InputLabel>
           <Select
-            labelId="rooms-label"
+            labelId='rooms-label'
             value={browse.filters.rooms || ''}
             onChange={handleRoomsChange}
-            label="Комнаты"
+            label='Комнаты'
           >
-            <MenuItem value="">Любое количество</MenuItem>
+            <MenuItem value=''>Любое количество</MenuItem>
             <MenuItem value={1}>1</MenuItem>
             <MenuItem value={2}>2</MenuItem>
             <MenuItem value={3}>3</MenuItem>
@@ -119,11 +129,7 @@ export const PropertyFilters = observer(() => {
       </Box>
 
       <Box className={styles.filtersActions}>
-        <Button 
-          variant="outlined" 
-          onClick={handleClearFilters}
-          className={styles.clearButton}
-        >
+        <Button variant='outlined' onClick={handleClearFilters} className={styles.clearButton}>
           Сбросить фильтры
         </Button>
       </Box>

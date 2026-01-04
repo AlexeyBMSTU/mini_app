@@ -4,7 +4,8 @@ export const mockProperties: Property[] = [
   {
     id: '1',
     title: 'Просторная 3-комнатная квартира в центре',
-    description: 'Светлая и просторная квартира в центре города с ремонтом. Все удобства. Рядом парк, магазины, школы.',
+    description:
+      'Светлая и просторная квартира в центре города с ремонтом. Все удобства. Рядом парк, магазины, школы.',
     type: PropertyType.APARTMENT,
     dealType: DealType.SALE,
     price: 8500000,
@@ -81,7 +82,8 @@ export const mockProperties: Property[] = [
   {
     id: '2',
     title: 'Современная студия с евроремонтом',
-    description: 'Стильная студия с современным ремонтом. Идеально для молодых людей или пары. Вся мебель и техника.',
+    description:
+      'Стильная студия с современным ремонтом. Идеально для молодых людей или пары. Вся мебель и техника.',
     type: PropertyType.APARTMENT,
     dealType: DealType.RENT,
     price: 35000,
@@ -148,7 +150,8 @@ export const mockProperties: Property[] = [
   {
     id: '3',
     title: 'Загородный дом с участком',
-    description: 'Прекрасный дом в живописном месте. Большой участок с плодовыми деревьями. Гараж на 2 машины.',
+    description:
+      'Прекрасный дом в живописном месте. Большой участок с плодовыми деревьями. Гараж на 2 машины.',
     type: PropertyType.HOUSE,
     dealType: DealType.SALE,
     price: 12500000,
@@ -222,7 +225,8 @@ export const mockProperties: Property[] = [
   {
     id: '4',
     title: '2-комнатная квартира в новостройке',
-    description: 'Светлая квартира в современном ЖК. Свободная планировка. Вид на парк. Рядом метро.',
+    description:
+      'Светлая квартира в современном ЖК. Свободная планировка. Вид на парк. Рядом метро.',
     type: PropertyType.APARTMENT,
     dealType: DealType.SALE,
     price: 9200000,

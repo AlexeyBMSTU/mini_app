@@ -9,9 +9,13 @@
   position: relative;
   color: #6ebeff;
   box-sizing: border-box;
-  height: 100vh !important;
   margin: 0;
   animation: rotation 1s linear infinite;
+  position: absolute;
+  right: 50%;
+  left: 50%;
+  top: 50%;
+  bottom: 50%;
 }
 .root::after,
 .root::before {

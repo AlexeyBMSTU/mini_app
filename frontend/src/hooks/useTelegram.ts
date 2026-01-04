@@ -43,7 +43,7 @@ export const useTelegram = () => {
   }
 
   return {
-    user,          
+    user,
     loading,
     isTelegram,
     showAlert,

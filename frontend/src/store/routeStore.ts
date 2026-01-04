@@ -53,7 +53,7 @@ class RouteStore {
     if (this.navigateFn) {
       this.navigateFn('/')
     }
-    
+
     this.updateTelegramBackButton()
   }
 

@@ -4,11 +4,11 @@ import { useStore } from '@/store'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
-import AddHomeWorkOutlinedIcon from '@mui/icons-material/AddHomeWorkOutlined';
-import MapsHomeWorkOutlinedIcon from '@mui/icons-material/MapsHomeWorkOutlined';
-import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import AddHomeWorkRoundedIcon from '@mui/icons-material/AddHomeWorkRounded';
+import AddHomeWorkOutlinedIcon from '@mui/icons-material/AddHomeWorkOutlined'
+import MapsHomeWorkOutlinedIcon from '@mui/icons-material/MapsHomeWorkOutlined'
+import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded'
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
+import AddHomeWorkRoundedIcon from '@mui/icons-material/AddHomeWorkRounded'
 
 import styles from './TabBar.module.css'
 
@@ -35,25 +35,50 @@ export const TabBar = observer(() => {
   }
 
   return (
-    <div
-      className={styles.tabBar}
-      style={{backgroundColor: 'white'}}
-    >
+    <div className={styles.tabBar} style={{ backgroundColor: 'white' }}>
       <Tabs
         value={activeTab}
         onChange={handleRoute}
         aria-label='Navigation tabs'
         slotProps={{
           indicator: {
-            style: { top: 0 }
-          }
+            style: { top: 0 },
+          },
+          list: {
+            style: { gap: '15px' },
+          },
         }}
       >
-        <Tab icon={activeTab === 0 ? <MapsHomeWorkRoundedIcon  fontSize='large'  color='primary' /> : <MapsHomeWorkOutlinedIcon fontSize='large' 
-        color='primary' />} aria-label='Houmes' />
-        <Tab icon={activeTab === 1 ? <AddHomeWorkRoundedIcon  fontSize='large'  color='primary' /> : <AddHomeWorkOutlinedIcon fontSize='large' 
-        color='primary' />}aria-label='Create' />
-        <Tab icon={activeTab === 2 ? <AccountCircleRoundedIcon fontSize='large' color='primary' /> : <AccountCircleOutlinedIcon fontSize='large' color='primary' />} aria-label='Profile' />
+        <Tab
+          icon={
+            activeTab === 0 ? (
+              <MapsHomeWorkRoundedIcon fontSize='large' color='primary' />
+            ) : (
+              <MapsHomeWorkOutlinedIcon fontSize='large' color='primary' />
+            )
+          }
+          aria-label='Houmes'
+        />
+        <Tab
+          icon={
+            activeTab === 1 ? (
+              <AddHomeWorkRoundedIcon fontSize='large' color='primary' />
+            ) : (
+              <AddHomeWorkOutlinedIcon fontSize='large' color='primary' />
+            )
+          }
+          aria-label='Create'
+        />
+        <Tab
+          icon={
+            activeTab === 2 ? (
+              <AccountCircleRoundedIcon fontSize='large' color='primary' />
+            ) : (
+              <AccountCircleOutlinedIcon fontSize='large' color='primary' />
+            )
+          }
+          aria-label='Profile'
+        />
       </Tabs>
     </div>
   )

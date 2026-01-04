@@ -16,53 +16,53 @@ export const HomePage = observer(() => {
   const [navigating, setNavigating] = useState(false)
   const { route } = useStore()
   const { user } = useTelegram()
-  
+
   const handleContinue = () => {
-    setNavigating(true);
-    route.navigate('/browse');
+    setNavigating(true)
+    route.navigate('/browse')
   }
   useEffect(() => {
     if (user) {
       console.log('User ID из хука:', user.id)
     }
   }, [user])
-  
+
   return (
     <PurePage>
-      <div style={{height: '100vh'}}>
-      <section className={styles.welcomeSection}>
-        <div style={{ color: '#1976d2' }} className={styles.welcomeText}>
-          <TypingEffect isBold text='SERVATORY' />
-        </div>
-        <div style={{ color: '#1976d2', fontSize: 24 }} className={styles.welcomeText}>
-          <TypingEffect text='Будь ближе к&nbsp;недвижимости' />
-        </div>
-        <FormGroup className={styles.welcomeButton}>
-          <Button
-            size='large'
-            disabled={disabled || navigating}
-            variant='outlined'
-            onClick={handleContinue}
-            sx={{width: '100%'}}
-          >
-            Продолжить
-            <ArrowForwardRounded
-              color={disabled || navigating ? 'disabled' : 'primary'}
-              fontSize='large'
-            />
-          </Button>
-          <FormControlLabel
-            control={
-              <Checkbox
-                style={{ color: '#1976d2' }}
-                onClick={() => setDisabled(disabled => !disabled)}
-                disabled={navigating}
+      <div style={{ height: '100vh' }}>
+        <section className={styles.welcomeSection}>
+          <div style={{ color: '#1976d2' }} className={styles.welcomeText}>
+            <TypingEffect isBold text='SERVATORY' />
+          </div>
+          <div style={{ color: '#1976d2', fontSize: 24 }} className={styles.welcomeText}>
+            <TypingEffect text='Будь ближе к&nbsp;недвижимости' />
+          </div>
+          <FormGroup className={styles.welcomeButton}>
+            <Button
+              size='large'
+              disabled={disabled || navigating}
+              variant='outlined'
+              onClick={handleContinue}
+              sx={{ width: '100%' }}
+            >
+              Продолжить
+              <ArrowForwardRounded
+                color={disabled || navigating ? 'disabled' : 'primary'}
+                fontSize='large'
               />
-            }
-            label={<span style={{ color: '#1976d2' }}>Согласие на обработку перс. данных</span>}
-          />
-        </FormGroup>
-      </section>
+            </Button>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  style={{ color: '#1976d2' }}
+                  onClick={() => setDisabled(disabled => !disabled)}
+                  disabled={navigating}
+                />
+              }
+              label={<span style={{ color: '#1976d2' }}>Согласие на обработку перс. данных</span>}
+            />
+          </FormGroup>
+        </section>
       </div>
     </PurePage>
   )

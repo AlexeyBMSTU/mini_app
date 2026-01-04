@@ -1,0 +1,30 @@
+.createContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .createContainer {
+    padding: 16px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

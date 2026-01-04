@@ -8,7 +8,7 @@ class ApiService {
     this.baseUrl = 'http://localhost:8080'
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
+  async request(endpoint: string, options: RequestInit = {}) {
     const url = this.baseUrl + endpoint
 
     const defaultOptions: RequestInit = {
@@ -113,6 +113,17 @@ class ApiService {
     return this.request('/api/properties', {
       method: 'POST',
       body: JSON.stringify(propertyData),
+    })
+  }
+
+  async getProfileData() {
+    return this.request('/api/user/profile-data')
+  }
+
+  async updateProfileData(data: any) {
+    return this.request('/api/user/profile-data', {
+      method: 'PUT',
+      body: JSON.stringify(data),
     })
   }
 }
