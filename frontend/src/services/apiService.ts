@@ -5,11 +5,11 @@ class ApiService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = `http://localhost:8080`
+    this.baseUrl = 'http://localhost:8080'
   }
 
   private async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseUrl}${endpoint}`
+    const url = this.baseUrl + endpoint
 
     const defaultOptions: RequestInit = {
       headers: {
@@ -24,7 +24,7 @@ class ApiService {
       const response = await fetch(url, config)
       if (!response.ok) {
         console.error(response)
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error('HTTP error! status: ' + response.status)
       }
 
       return await response.json()
@@ -102,11 +102,18 @@ class ApiService {
     }
 
     const queryString = params.toString()
-    return this.request(`/api/properties${queryString ? `?${queryString}` : ''}`)
+    return this.request('/api/properties' + (queryString ? '?' + queryString : ''))
   }
 
   async getPropertyById(id: string) {
-    return this.request(`/api/properties/${id}`)
+    return this.request('/api/properties/' + id)
+  }
+
+  async createProperty(propertyData: any) {
+    return this.request('/api/properties', {
+      method: 'POST',
+      body: JSON.stringify(propertyData),
+    })
   }
 }
 

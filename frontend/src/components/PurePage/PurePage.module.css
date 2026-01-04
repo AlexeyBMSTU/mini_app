@@ -6,6 +6,7 @@
   justify-content: center;
   padding-bottom: 87px;
   padding-top: 100px;
+      width: 100%;
 }
 
 .container > :first-child {

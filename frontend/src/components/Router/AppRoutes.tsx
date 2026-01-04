@@ -13,6 +13,9 @@ const HomePage = React.lazy(() =>
 const BrowsePage = React.lazy(() =>
   import('@/pages/Browse/BrowsePage').then(module => ({ default: module.BrowsePage }))
 )
+const CreatePage = React.lazy(() =>
+  import('@/pages/Create/CreatePage').then(module => ({ default: module.CreatePage }))
+)
 const SettingsPage = React.lazy(() =>
   import('@/pages/Settings/SettingsPage').then(module => ({ default: module.SettingsPage }))
 )
@@ -30,7 +33,8 @@ export const AppRoutes = observer(() => {
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/browse' element={<BrowsePage />} />
-        <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/create' element={<CreatePage />} />
+        <Route path='/profile' element={<SettingsPage />} />
         <Route path='*' element={<ErrorPage />} />
       </Routes>
       <TabBar />

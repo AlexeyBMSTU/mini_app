@@ -4,12 +4,15 @@ import { useStore } from '@/store'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import AddHomeWorkOutlinedIcon from '@mui/icons-material/AddHomeWorkOutlined';
+import MapsHomeWorkOutlinedIcon from '@mui/icons-material/MapsHomeWorkOutlined';
+import MapsHomeWorkRoundedIcon from '@mui/icons-material/MapsHomeWorkRounded';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import AddHomeWorkRoundedIcon from '@mui/icons-material/AddHomeWorkRounded';
+
 import styles from './TabBar.module.css'
 
-const TAB_ROUTES = ['/browse', '/settings'] as const
+const TAB_ROUTES = ['/browse', '/create', '/profile'] as const
 
 export const TabBar = observer(() => {
   const { route } = useStore()
@@ -40,16 +43,17 @@ export const TabBar = observer(() => {
         value={activeTab}
         onChange={handleRoute}
         aria-label='Navigation tabs'
-        sx={{paddingBottom: '3px'}}
         slotProps={{
           indicator: {
-            style: { display: 'none' }
+            style: { top: 0 }
           }
         }}
       >
-        <Tab icon={activeTab === 0 ? <HomeRoundedIcon  fontSize='large'  color='primary' /> : <HomeOutlinedIcon fontSize='large' 
+        <Tab icon={activeTab === 0 ? <MapsHomeWorkRoundedIcon  fontSize='large'  color='primary' /> : <MapsHomeWorkOutlinedIcon fontSize='large' 
         color='primary' />} aria-label='Houmes' />
-        <Tab icon={activeTab === 1 ? <AccountCircleRoundedIcon fontSize='large' color='primary' /> : <AccountCircleOutlinedIcon fontSize='large' color='primary' />} aria-label='Profile' />
+        <Tab icon={activeTab === 1 ? <AddHomeWorkRoundedIcon  fontSize='large'  color='primary' /> : <AddHomeWorkOutlinedIcon fontSize='large' 
+        color='primary' />}aria-label='Create' />
+        <Tab icon={activeTab === 2 ? <AccountCircleRoundedIcon fontSize='large' color='primary' /> : <AccountCircleOutlinedIcon fontSize='large' color='primary' />} aria-label='Profile' />
       </Tabs>
     </div>
   )
