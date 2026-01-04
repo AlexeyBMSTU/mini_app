@@ -96,7 +96,6 @@ export const CreatePage = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  // eslint-disable-next-line no-undef
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     if (name) {
@@ -128,7 +127,6 @@ export const CreatePage = () => {
     }
   }
 
-  // eslint-disable-next-line no-undef
   const handleFeatureChange = (featureName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,

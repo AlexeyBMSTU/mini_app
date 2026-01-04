@@ -33,6 +33,7 @@ export default [
     },
     rules: {
       'no-unused-vars': 'off',
+      'no-undef': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
